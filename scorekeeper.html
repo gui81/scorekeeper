@@ -1,0 +1,116 @@
+<head>
+  <title>scorekeeper</title>
+</head>
+
+<body>
+  {{> game_form}}
+  <hr>
+  {{> individual_scores}}
+  <hr>
+  {{> team_scores}}
+</body>
+
+<template name="game_form">
+<form role="form">
+  <div class="container-fluid">
+  <div class="row">
+  <div class="col-md-4"></div>
+  <div class="col-md-4">
+    <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-12"><h2 align="center">ScoreKeeper</h2></div>
+    </div>
+    <div class="row">
+      <div class="col-md-6" style="text-align:right; color:red">Red Team</div>
+      <div class="col-md-6" style="text-align:left; color:blue">Blue Team</div>
+    </div>
+    <div class="row">
+      <div class="col-md-6" style="text-align:right">
+        <div class="form-group">
+          <input type="text" class="form-control" id="ro" placeholder="Red Offensive Player">
+        </div>
+      </div>
+      <div class="col-md-6" style="text-align:left">
+        <div class="form-group">
+          <input type="text" class="form-control" id="bo" placeholder="Blue Offensive Player">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6" style="text-align:right">
+        <div class="form-group">
+          <input type="text" class="form-control" id="rd" placeholder="Red Defensive Player">
+        </div>
+      </div>
+      <div class="col-md-6" style="text-align:left">
+        <div class="form-group">
+          <input type="text" class="form-control" id="bd" placeholder="Blue Defensive Player">
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <hr>
+      <div class="col-md-12" style="text-align:center"><h4 align="center">Score</h4></div>
+    </div>
+    <div class="row">
+      <div class="col-md-6" style="text-align:right">
+        <div class="form-group">
+          <input type="text" class="form-control" id="rs" placeholder="Red Score">
+        </div>
+      </div>
+      <div class="col-md-6" style="text-align:left">
+        <div class="form-group">
+          <input type="text" class="form-control" id="bs" placeholder="Blue Score">
+        </div>
+      </div>
+    <div class="row">
+      <div class="col-md-12" style="text-align:center">
+        <button type="button" id="submit" class="btn btn-default">Submit</button>
+      </div>
+    </div>
+    </div>
+    </div>
+    <div class="col-md-4"></div>
+    </div>
+  </div>
+  </form>
+</template>
+
+<template name="individual_scores">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-4"></div>
+        <div class="col-md-4">
+          <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-12"><h2 align="center">Individual Scores</h2></div>
+            <table class="table table-striped">
+              {{#each score}}
+              <tr>
+                <td>{{name}}</td>
+                <td>{{wins}}</td>
+                <td>{{losses}}</td>
+              </tr>
+              {{/each}}
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template name="team_scores">
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-4"></div>
+        <div class="col-md-4">
+          <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-12"><h2 align="center">Team Scores</h2></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
