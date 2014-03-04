@@ -9,3 +9,6 @@ insecure
 preserve-inputs
 npm
 bootstrap-3
+simple-schema
+collection2
+autoform

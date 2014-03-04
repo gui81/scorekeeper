@@ -11,89 +11,107 @@
 </body>
 
 <template name="game_form">
-<form role="form">
-  <div class="container-fluid">
+  {{#autoForm schema=matchForm id="gameform" novalidate="novalidate"}}
+<fieldset>
   <div class="row">
-  <div class="col-md-4"></div>
-  <div class="col-md-4">
-    <div class="container-fluid">
-    <div class="row">
-      <div class="col-md-12"><h2 align="center">ScoreKeeper</h2></div>
-    </div>
-    <div class="row">
-      <div class="col-md-6" style="text-align:right; color:red">Red Team</div>
-      <div class="col-md-6" style="text-align:left; color:blue">Blue Team</div>
-    </div>
-    <div class="row">
-      <div class="col-md-6" style="text-align:right">
-        <div class="form-group">
-          <input type="text" class="form-control" id="ro" placeholder="Red Offensive Player">
+    <div class="col-sm-6 col-sm-offset-3">
+      <div class="row">
+        <div class="col-sm-12"><h2 align="center">ScoreKeeper</h2></div>
+      </div>
+
+      <div class="row">
+        <!-- Red Team -->
+        <div class="col-sm-6">
+          <div class="form-group{{#if afFieldIsInvalid 'ro'}} has-error{{/if}}">
+            <label style="text-align:right; color:red">Red Team</label>
+            {{afFieldInput 'ro' placeholder="schemaLabel"}}
+            {{#if afFieldIsInvalid 'ro'}}
+            <span class="help-block">{{afFieldMessage 'ro'}}</span>
+            {{/if}}
+          </div>
+          <div class="form-group{{#if afFieldIsInvalid 'rd'}} has-error{{/if}}">
+            {{afFieldInput 'rd' placeholder="schemaLabel"}}
+            {{#if afFieldIsInvalid 'rd'}}
+            <span class="help-block">{{afFieldMessage 'rd'}}</span>
+            {{/if}}
+          </div>
+        </div>
+
+        <!-- Blue Team -->
+        <div class="col-sm-6">
+          <div class="form-group{{#if afFieldIsInvalid 'bo'}} has-error{{/if}}">
+            <label style="text-align:left; color:blue">Blue Team</label>
+            {{afFieldInput 'bo' placeholder="schemaLabel"}}
+            {{#if afFieldIsInvalid 'bo'}}
+            <span class="help-block">{{afFieldMessage 'bo'}}</span>
+            {{/if}}
+          </div>
+          <div class="form-group{{#if afFieldIsInvalid 'bd'}} has-error{{/if}}">
+            {{afFieldInput 'bd' placeholder="schemaLabel"}}
+            {{#if afFieldIsInvalid 'bd'}}
+            <span class="help-block">{{afFieldMessage 'bd'}}</span>
+            {{/if}}
+          </div>
         </div>
       </div>
-      <div class="col-md-6" style="text-align:left">
-        <div class="form-group">
-          <input type="text" class="form-control" id="bo" placeholder="Blue Offensive Player">
+
+
+      <div class="row">
+        <hr>
+        <div class="col-sm-12" style="text-align:center"><h4 align="center">Score</h4></div>
+      </div>
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="form-group{{#if afFieldIsInvalid 'rs'}} has-error{{/if}}">
+            {{afFieldInput 'rs' placeholder="schemaLabel"}}
+            {{#if afFieldIsInvalid 'rs'}}
+            <span class="help-block">{{afFieldMessage 'rs'}}</span>
+            {{/if}}
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="form-group{{#if afFieldIsInvalid 'bs'}} has-error{{/if}}">
+            {{afFieldInput 'bs' placeholder="schemaLabel"}}
+            {{#if afFieldIsInvalid 'bs'}}
+            <span class="help-block">{{afFieldMessage 'bs'}}</span>
+            {{/if}}
+          </div>
+        </div>
+      </fieldset>
+      <div class="row">
+        <div class="col-sm-12" style="text-align:center">
+          <button type="submit" id="submit" class="btn btn-primary" data-meteor-method="add_match">Submit</button>
         </div>
       </div>
-    </div>
-    <div class="row">
-      <div class="col-md-6" style="text-align:right">
-        <div class="form-group">
-          <input type="text" class="form-control" id="rd" placeholder="Red Defensive Player">
-        </div>
-      </div>
-      <div class="col-md-6" style="text-align:left">
-        <div class="form-group">
-          <input type="text" class="form-control" id="bd" placeholder="Blue Defensive Player">
-        </div>
-      </div>
-    </div>
-    <div class="row">
-      <hr>
-      <div class="col-md-12" style="text-align:center"><h4 align="center">Score</h4></div>
-    </div>
-    <div class="row">
-      <div class="col-md-6" style="text-align:right">
-        <div class="form-group">
-          <input type="text" class="form-control" id="rs" placeholder="Red Score">
-        </div>
-      </div>
-      <div class="col-md-6" style="text-align:left">
-        <div class="form-group">
-          <input type="text" class="form-control" id="bs" placeholder="Blue Score">
-        </div>
-      </div>
-    <div class="row">
-      <div class="col-md-12" style="text-align:center">
-        <button type="button" id="submit" class="btn btn-default">Submit</button>
       </div>
     </div>
     </div>
-    </div>
-    <div class="col-md-4"></div>
-    </div>
-  </div>
-  </form>
+    </fieldset>
+  {{/autoForm}}
 </template>
 
 <template name="individual_scores">
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-md-4"></div>
-        <div class="col-md-4">
-          <div class="container-fluid">
-          <div class="row">
-            <div class="col-md-12"><h2 align="center">Individual Scores</h2></div>
-            <table class="table table-striped">
-              {{#each score}}
-              <tr>
-                <td>{{name}}</td>
-                <td>{{wins}}</td>
-                <td>{{losses}}</td>
-              </tr>
-              {{/each}}
-            </table>
-          </div>
+  <div class="row">
+    <div class="col-sm-6 col-sm-offset-3">
+      <div class="row">
+        <div class="col-sm-12"><h2 align="center">Individual Scores</h2></div>
+        <div class="col-sm-12" align="center">
+        <table class="table table-striped">
+        <tbody>
+          <tr>
+            <th>Name</th>
+            <th>Wins</th>
+            <th>Losses</th>
+          </tr>
+          {{#each score}}
+          <tr>
+            <td>{{name}}</td>
+            <td>{{wins}}</td>
+            <td>{{losses}}</td>
+          </tr>
+          {{/each}}
+          </tbody>
+        </table>
         </div>
       </div>
     </div>
@@ -101,16 +119,31 @@
 </template>
 
 <template name="team_scores">
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-md-4"></div>
-        <div class="col-md-4">
-          <div class="container-fluid">
-          <div class="row">
-            <div class="col-md-12"><h2 align="center">Team Scores</h2></div>
+  <div class="row">
+      <div class="col-sm-6 col-sm-offset-3">
+        <div class="row">
+          <div class="col-sm-12"><h2 align="center">Team Scores</h2></div>
+          <div class="col-sm-12">
+          <table class="table table-striped">
+            <tbody>
+            <tr>
+              <th>Offensive Player</th>
+              <th>Defensive Player</th>
+              <th>Wins</th>
+              <th>Losses</th>
+            </tr>
+            {{#each score}}
+            <tr>
+              <td>{{off_player}}</td>
+              <td>{{def_player}}</td>
+              <td>{{wins}}</td>
+              <td>{{losses}}</td>
+            </tr>
+            {{/each}}
+            </tbody>
+          </table>
           </div>
         </div>
-      </div>
     </div>
   </div>
 </template>

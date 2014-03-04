@@ -1,6 +1,9 @@
 {
   "packages": {
     "npm": {},
-    "bootstrap-3": {}
+    "bootstrap-3": {},
+    "simple-schema": {},
+    "collection2": {},
+    "autoform": {}
   }
 }
