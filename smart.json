@@ -4,6 +4,11 @@
     "bootstrap-3": {},
     "simple-schema": {},
     "collection2": {},
-    "autoform": {}
+    "autoform": {},
+    "font-awesome": {},
+    "iron-router": {},
+    "spin": {},
+    "typeahead": {},
+    "chartjs": {}
   }
 }

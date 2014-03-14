@@ -6,7 +6,7 @@
         "version": "0.2.6"
       },
       "bootstrap-3": {
-        "version": "3.1.0-1"
+        "version": "3.1.1-1"
       },
       "simple-schema": {
         "version": "0.2.40"
@@ -15,7 +15,22 @@
         "version": "0.3.8"
       },
       "autoform": {
-        "version": "0.4.18"
+        "version": "0.4.20"
+      },
+      "font-awesome": {
+        "version": "4.0.3"
+      },
+      "iron-router": {
+        "version": "0.6.4"
+      },
+      "spin": {
+        "version": "0.2.2"
+      },
+      "typeahead": {
+        "version": "0.0.6"
+      },
+      "chartjs": {
+        "version": "0.0.4"
       }
     },
     "packages": {
@@ -26,8 +41,8 @@
       },
       "bootstrap-3": {
         "git": "https://github.com/mangasocial/meteor-bootstrap-3.git",
-        "tag": "v3.1.0-1",
-        "commit": "329dccb08bfc18c635676dea600ac9953162cda9"
+        "tag": "v3.1.1-1",
+        "commit": "63dd38968828bb8963636df93e9a1c45e2dfe67e"
       },
       "simple-schema": {
         "git": "https://github.com/aldeed/meteor-simple-schema.git",
@@ -41,8 +56,33 @@
       },
       "autoform": {
         "git": "https://github.com/aldeed/meteor-autoform.git",
-        "tag": "v0.4.18",
-        "commit": "991efc809b959e77d94796f47ca6c5b1e5c2c6e2"
+        "tag": "v0.4.20",
+        "commit": "d4d40a5356f9577a7d95d3526045035f3f1135af"
+      },
+      "font-awesome": {
+        "git": "https://github.com/nate-strauser/meteor-font-awesome.git",
+        "tag": "v4.0.3",
+        "commit": "61e9361384347547ae144f8228faa4deffda23db"
+      },
+      "iron-router": {
+        "git": "https://github.com/EventedMind/iron-router.git",
+        "tag": "v0.6.4",
+        "commit": "927bbaed1b87894fb6fb70807f74ff3a5bd89f29"
+      },
+      "spin": {
+        "git": "https://github.com/SachaG/meteor-spin.git",
+        "tag": "v0.2.2",
+        "commit": "3f655f0016228e4195acc784c45d3e3a247dc39f"
+      },
+      "typeahead": {
+        "git": "https://github.com/sergeyt/meteor-typeahead.git",
+        "tag": "v0.0.6",
+        "commit": "79b17707e3244f87af08a1a59e1ac4088f3e8644"
+      },
+      "chartjs": {
+        "git": "https://github.com/donskifarrell/meteor-chartjs.git",
+        "tag": "v0.0.4",
+        "commit": "9d2adcd1de3728c8227e8eb7da0dcb2e0df21d0b"
       },
       "moment": {
         "git": "https://github.com/acreeger/meteor-moment.git",
