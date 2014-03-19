@@ -55,7 +55,7 @@
     <fieldset>
       <div class="row">
         <div class="col-sm-6 col-sm-offset-3">
-          <div class="form-group{{#if afFieldIsInvalid 'player_name'}} has-error{{/if}}">
+          <div class="form-group{{#if afFieldIsInvalid 'player_name'}} has-error{{/if}} typeahead" data-source="{{players}}">
             <label style="text-align:left">{{afFieldLabel 'player_name'}}</label>
             {{afFieldInput 'player_name'}}
             {{#if afFieldIsInvalid 'player_name'}}
@@ -94,12 +94,14 @@
         <thead>
           <tr>
             <th>Name</th>
+            <th>Elo Rating</th>
           </tr>
         </thead>
         <tbody>
           {{#each players}}
             <tr>
               <td>{{name}}</td>
+              <td>{{findPlayerFirstEloRatingFromId _id}}</td>
             </tr>
           {{/each}}
         </tbody>
@@ -122,7 +124,7 @@
         <!-- Red Team -->
         <div class="col-sm-6">
           <div class="form-group{{#if afFieldIsInvalid 'ro'}} has-error{{/if}}">
-            <label style="text-align:right; color:red">Red Team <small>({{red_singles_wins}} / {{red_doubles_wins}})</small></label>
+            <label style="text-align:right; color:red">Red Individual / Team <small>({{red_singles_wins}} / {{red_doubles_wins}})</small></label>
             {{afFieldInput 'ro' placeholder="schemaLabel"}}
             {{#if afFieldIsInvalid 'ro'}}
             <span class="help-block">{{afFieldMessage 'ro'}}</span>
@@ -139,7 +141,7 @@
         <!-- Blue Team -->
         <div class="col-sm-6">
           <div class="form-group{{#if afFieldIsInvalid 'bo'}} has-error{{/if}}">
-            <label style="text-align:left; color:blue">Blue Team <small>({{blue_singles_wins}} / {{blue_doubles_wins}})</small></label>
+            <label style="text-align:left; color:blue">Blue Individual / Team <small>({{blue_singles_wins}} / {{blue_doubles_wins}})</small></label>
             {{afFieldInput 'bo' placeholder="schemaLabel"}}
             {{#if afFieldIsInvalid 'bo'}}
             <span class="help-block">{{afFieldMessage 'bo'}}</span>
@@ -212,10 +214,10 @@
           {{#each matches}}
             <tr>
               <td>{{formatDate date_time}}</td>
-              <td>{{ro}}</td>
-              <td>{{rd}}</td>
-              <td>{{bo}}</td>
-              <td>{{bd}}</td>
+              <td>{{findPlayerFromId ro_id}}</td>
+              <td>{{findPlayerFromId rd_id}}</td>
+              <td>{{findPlayerFromId bo_id}}</td>
+              <td>{{findPlayerFromId bd_id}}</td>
               <td>{{rs}}</td>
               <td>{{bs}}</td>
             </tr>
@@ -239,6 +241,7 @@
             <th>Wins</th>
             <th>Losses</th>
             <th>Win Percentage</th>
+            <th>Rating</th>
           </tr>
           </thead>
           <tbody>
@@ -248,6 +251,7 @@
             <td>{{wins}}</td>
             <td>{{losses}}</td>
             <td>{{percent}}</td>
+            <td>{{rating}}</td>
           </tr>
           {{/each}}
           </tbody>

@@ -78,7 +78,7 @@ if (Meteor.isServer) {
   var updateRating = function(player_id, rating, opponent_rating, win) {
     var S = (win ? 1 : 0);
     var We = winExpectancy(rating, opponent_rating);
-    var Rn = Ro + (K_RATING_COEFFICIENT * (S - We));
+    var Rn = rating + (K_RATING_COEFFICIENT * (S - We));
 
     EloRatings.insert({
       date_time: Date.now(),
@@ -96,11 +96,16 @@ if (Meteor.isServer) {
     return We;
   }
 
+  /**
+   *
+   * @return {String} id of the record
+   */
   var addPlayer = function(player_name, rating) {
     var id = Players.findOne({name: player_name});
     if (id) {
       // player already in database, no need to add again
-      return id;
+      console.log("id already exists: " + id._id);
+      return id._id;
     }
 
     // didn't find player above, so add one now
@@ -120,10 +125,12 @@ if (Meteor.isServer) {
 
   var getPlayerId = function(player_name) {
     var id = Players.findOne({name: player_name});
-    if (!id) {
+    if (id) {
+      return id._id;
+    } else {
       // if an id did not exist, then it means that they were not added through
       // the add player form, no biggie, we'll just add them as a Novice-Elite (750)
-      var id = addPlayer(player_name, 750);
+      id = addPlayer(player_name, 750);
     }
 
     return id;
@@ -145,19 +152,19 @@ if (Meteor.isServer) {
         var last_ro_rating, last_rd_rating, last_bo_rating, last_bd_rating;
         if (typeof doc.ro != "undefined") {
           ro_id = getPlayerId(doc.ro);
-          last_ro_rating = EloRatings.find({player_id: ro_id}, {sort: {date_time: -1}, limit: 1});
+          last_ro_rating = EloRatings.findOne({player_id: ro_id}, {sort: {date_time: -1}});
         }
         if (typeof doc.rd != "undefined") {
           rd_id = getPlayerId(doc.rd);
-          last_rd_rating = EloRatings.find({player_id: rd_id}, {sort: {date_time: -1}, limit: 1});
+          last_rd_rating = EloRatings.findOne({player_id: rd_id}, {sort: {date_time: -1}});
         }
         if (typeof doc.bo != "undefined") {
           bo_id = getPlayerId(doc.bo);
-          last_bo_rating = EloRatings.find({player_id: bo_id}, {sort: {date_time: -1}, limit: 1});
+          last_bo_rating = EloRatings.findOne({player_id: bo_id}, {sort: {date_time: -1}});
         }
         if (typeof doc.bd != "undefined") {
           bd_id = getPlayerId(doc.bd);
-          last_bd_rating = EloRatings.find({player_id: bd_id}, {sort: {date_time: -1}, limit: 1});
+          last_bd_rating = EloRatings.findOne({player_id: bd_id}, {sort: {date_time: -1}});
         }
 
         Matches.insert({
@@ -180,8 +187,8 @@ if (Meteor.isServer) {
         if ((typeof doc.rd != "undefined") &&
             (typeof doc.bd != "undefined")) {
           // 2 v 2
-          var red_rating = (last_ro_rating + last_rd_rating) / 2.0;
-          var blue_rating = (last_bo_rating + last_bd_rating) / 2.0;
+          var red_rating = (last_ro_rating.rating + last_rd_rating.rating) / 2.0;
+          var blue_rating = (last_bo_rating.rating + last_bd_rating.rating) / 2.0;
           var ro_rn = updateRating(ro_id, red_rating, blue_rating, red_won);
           var rd_rn = updateRating(rd_id, red_rating, blue_rating, red_won);
           var bo_rn = updateRating(bo_id, blue_rating, red_rating, !red_won);
@@ -189,24 +196,24 @@ if (Meteor.isServer) {
         } else if ((typeof doc.rd == "undefined") &&
                    (typeof doc.bd == "undefined")) {
           // 1 v 1
-          var ro_rn = updateRating(ro_id, last_ro_rating, last_bo_rating, red_won);
-          var bo_rn = updateRating(bo_id, last_bo_rating, last_ro_rating, !red_won);
+          var ro_rn = updateRating(ro_id, last_ro_rating.rating, last_bo_rating.rating, red_won);
+          var bo_rn = updateRating(bo_id, last_bo_rating.rating, last_ro_rating.rating, !red_won);
         } else {
           // this is where I give more value to the single player, by not dividing
           // the team rating by 2, but instead by 1.5, since they are expected to
           // win
           if (typeof doc.rd != "undefined") {
             // 2 red v 1 blue
-            var red_rating = (last_ro_rating + last_rd_rating) / 1.5;
-            var ro_rn = updateRating(ro_id, red_rating, last_bo_rating, red_won);
-            var rd_rn = updateRating(rd_id, red_rating, last_bo_rating, red_won);
-            var bo_rn = updateRating(bo_id, last_bo_rating, red_rating, !red_won);
+            var red_rating = (last_ro_rating.rating + last_rd_rating.rating) / 1.5;
+            var ro_rn = updateRating(ro_id, red_rating, last_bo_rating.rating, red_won);
+            var rd_rn = updateRating(rd_id, red_rating, last_bo_rating.rating, red_won);
+            var bo_rn = updateRating(bo_id, last_bo_rating.rating, red_rating, !red_won);
           } else {
             // 1 red v 2 blue
-            var blue_rating = (last_bo_rating + last_bd_rating) / 1.5;
-            var ro_rn = updateRating(ro_id, last_ro_rating, blue_rating, red_won);
-            var bo_rn = updateRating(bo_id, blue_rating, last_ro_rating, !red_won);
-            var bd_rn = updateRating(bd_id, blue_rating, last_ro_rating, !red_won);
+            var blue_rating = (last_bo_rating.rating + last_bd_rating.rating) / 1.5;
+            var ro_rn = updateRating(ro_id, last_ro_rating.rating, blue_rating, red_won);
+            var bo_rn = updateRating(bo_id, blue_rating, last_ro_rating.rating, !red_won);
+            var bd_rn = updateRating(bd_id, blue_rating, last_ro_rating.rating, !red_won);
           }
         }
       },

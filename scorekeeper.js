@@ -32,6 +32,24 @@ if (Meteor.isClient) {
     return (y + " " + m + " " + d + " " + pad(h,2) + ":" + pad(min,2) + ":" + pad(s,2));
   });
 
+  Handlebars.registerHelper("findPlayerFromId", function(player_id) {
+    var player = Players.findOne({_id: player_id});
+    if (typeof player != "undefined") {
+      return player.name;
+    } else {
+      return 'N/A';
+    }
+  });
+
+  Handlebars.registerHelper("findPlayerFirstEloRatingFromId", function(player_id) {
+    var elo_rating = EloRatings.findOne({player_id: player_id}, {sort: {date_time: 1}});
+    if (typeof elo_rating != "undefined") {
+      return elo_rating.rating;
+    } else {
+      return 'N/A';
+    }
+  });
+
   var mForm = new AutoForm(MatchFormSchema);
   Template.game_form.helpers({
     matchForm: function() {
@@ -46,6 +64,60 @@ if (Meteor.isClient) {
     }
   });
 
+  var findPlayerLatestEloRatingFromId = function(player_id) {
+    var elo_rating = EloRatings.findOne({player_id: player_id}, {sort: {date_time: -1}});
+    if (typeof elo_rating != "undefined") {
+      return +elo_rating.rating.toFixed(2);
+    } else {
+      return 'N/A';
+    }
+  }
+
+  var pad = function(num, size) {
+    var s = num + "";
+    while (s.length < size) {
+      s = "0" + s;
+    }
+    return s;
+  }
+
+  var addIndPlayersArray = function(players, id, win, loss) {
+    if (typeof players[id] != "undefined") {
+      players[id] = ({
+        wins: players[id].wins + win,
+        losses: players[id].losses + loss
+      });
+    } else {
+      if ((typeof id != "undefined") && (id)) {
+        players[id] = ({
+          wins: win,
+          losses: loss
+        });
+      }
+    }
+  }
+
+  var addTeamPlayersArray = function(players, o_id, d_id, win, loss) {
+    if ((typeof players[o_id] != "undefined") &&
+        (typeof players[o_id][d_id] != "undefined")) {
+      players[o_id][d_id] = ({
+        wins: players[o_id][d_id].wins + win,
+        losses: players[o_id][d_id].losses + loss
+      });
+    } else {
+      if ( (typeof o_id != "undefined") && (typeof d_id != "undefined") &&
+           (o_id) && (d_id) ) {
+        if (typeof players[o_id] == "undefined") {
+          players[o_id] = [];
+        }
+        players[o_id][d_id] = ({
+          wins: win,
+          losses: loss
+        });
+      }
+    }
+  }
+
   Template.header.events({
     "click #menu-toggle": function(evt, tmpl) {
       $("#wrapper").toggleClass("active");
@@ -53,7 +125,7 @@ if (Meteor.isClient) {
   });
 
   Template.individual_stats.rendered = function() {
-    $("table#individual_stats_table").tablesorter({sortList:[[3,1]]});
+    $("table#individual_stats_table").tablesorter({sortList:[[4,1]]});
   }
 
   Template.team_stats.rendered = function() {
@@ -65,51 +137,7 @@ if (Meteor.isClient) {
   }
 
   Template.last_10_players.rendered = function() {
-    $("table#last_10_players_table").tablesorter({sortList:[[0,1]]});
-  }
-
-  var pad = function(num, size) {
-    var s = num + "";
-    while (s.length < size) {
-      s = "0" + s;
-    }
-    return s;
-  }
-
-  var addIndPlayersArray = function(players, name, win, loss) {
-    if (typeof players[name] != "undefined") {
-      players[name] = ({
-        wins: players[name].wins + win,
-        losses: players[name].losses + loss
-      });
-    } else {
-      if (typeof name != "undefined") {
-        players[name] = ({
-          wins: win,
-          losses: loss
-        });
-      }
-    }
-  }
-
-  var addTeamPlayersArray = function(players, o_name, d_name, win, loss) {
-    if ((typeof players[o_name] != "undefined") &&
-        (typeof players[o_name][d_name] != "undefined")) {
-      players[o_name][d_name] = ({
-        wins: players[o_name][d_name].wins + win,
-        losses: players[o_name][d_name].losses + loss
-      });
-    } else {
-      if ( (typeof o_name != "undefined") && (typeof d_name != "undefined") ) {
-        if (typeof players[o_name] == "undefined") {
-          players[o_name] = [];
-        }
-        players[o_name][d_name] = ({
-          wins: win,
-          losses: loss
-        });
-      }
-    }
+    $("table#last_10_players_table").tablesorter({sortList:[[0,0]]});
   }
 
   Template.game_form.helpers({
@@ -117,8 +145,7 @@ if (Meteor.isClient) {
       var matches = Matches.find({});
       var wins = 0;
       matches.forEach(function(match) {
-        if ((typeof match.ro != "undefined") &&
-            (typeof match.rd == "undefined") &&
+        if ((match.ro_id) && (!match.rd_id) &&
             (parseInt(match.rs) > parseInt(match.bs))) {
           wins += 1;
         }
@@ -131,8 +158,7 @@ if (Meteor.isClient) {
       var matches = Matches.find({});
       var wins = 0;
       matches.forEach(function(match) {
-        if ((typeof match.ro != "undefined") &&
-            (typeof match.rd != "undefined") &&
+        if ((match.ro_id) && (match.rd_id) &&
             (parseInt(match.rs) > parseInt(match.bs))) {
           wins += 1;
         }
@@ -145,8 +171,7 @@ if (Meteor.isClient) {
       var matches = Matches.find({});
       var wins = 0;
       matches.forEach(function(match) {
-        if ((typeof match.bo != "undefined") &&
-            (typeof match.bd == "undefined") &&
+        if ((match.bo_id) && (!match.bd_id) &&
             (parseInt(match.bs) > parseInt(match.rs))) {
           wins += 1;
         }
@@ -159,8 +184,7 @@ if (Meteor.isClient) {
       var matches = Matches.find({});
       var wins = 0;
       matches.forEach(function(match) {
-        if ((typeof match.bo != "undefined") &&
-            (typeof match.bd != "undefined") &&
+        if ((match.bo_id) && (match.bd_id) &&
             (parseInt(match.bs) > parseInt(match.rs))) {
           wins += 1;
         }
@@ -196,23 +220,28 @@ if (Meteor.isClient) {
           blue_win = 1;
         }
 
-        addIndPlayersArray(players, match.ro, red_win, blue_win);
-        addIndPlayersArray(players, match.rd, red_win, blue_win);
-        addIndPlayersArray(players, match.bo, blue_win, red_win);
-        addIndPlayersArray(players, match.bd, blue_win, red_win);
+        addIndPlayersArray(players, match.ro_id, red_win, blue_win);
+        addIndPlayersArray(players, match.rd_id, red_win, blue_win);
+        addIndPlayersArray(players, match.bo_id, blue_win, red_win);
+        addIndPlayersArray(players, match.bd_id, blue_win, red_win);
       });
 
       // now create a list that can be used for display
       var p = [];
-      for (var player in players) {
-        var per = (players[player].wins /
-          (players[player].wins + players[player].losses));
-        p.push({
-          name: player,
-          wins: players[player].wins,
-          losses: players[player].losses,
-          percent: (per.toFixed(2)*100) + "%"
-        });
+      for (var id in players) {
+        var per = (players[id].wins /
+          (players[id].wins + players[id].losses));
+        if (typeof id != "undefined") {
+          var player = Players.findOne({_id: id});
+          // console.log("player = " + JSON.stringify(player, null, 4));
+          p.push({
+            name: player.name,
+            wins: players[id].wins,
+            losses: players[id].losses,
+            percent: +(per*100).toFixed(2) + "%",
+            rating: findPlayerLatestEloRatingFromId(id)
+          });
+        }
       }
 
       return p;
@@ -234,21 +263,23 @@ if (Meteor.isClient) {
           blue_win = 1;
         }
 
-        addTeamPlayersArray(players, match.ro, match.rd, red_win, blue_win);
-        addTeamPlayersArray(players, match.bo, match.bd, blue_win, red_win);
+        addTeamPlayersArray(players, match.ro_id, match.rd_id, red_win, blue_win);
+        addTeamPlayersArray(players, match.bo_id, match.bd_id, blue_win, red_win);
       });
 
       var teams = [];
-      for (var o_name in players) {
-        for (var d_name in players[o_name]) {
-          var per = (players[o_name][d_name].wins /
-            (players[o_name][d_name].wins + players[o_name][d_name].losses));
+      for (var o_id in players) {
+        for (var d_id in players[o_id]) {
+          var per = (players[o_id][d_id].wins /
+            (players[o_id][d_id].wins + players[o_id][d_id].losses));
+          var o_player = Players.findOne({_id: o_id});
+          var d_player = Players.findOne({_id: d_id});
           teams.push({
-            off_player: o_name,
-            def_player: d_name,
-            wins: players[o_name][d_name].wins,
-            losses: players[o_name][d_name].losses,
-            percent: (per.toFixed(2)*100) + "%"
+            off_player: o_player.name,
+            def_player: d_player.name,
+            wins: players[o_id][d_id].wins,
+            losses: players[o_id][d_id].losses,
+            percent: +(per*100).toFixed(2) + "%"
           });
         }
       }
