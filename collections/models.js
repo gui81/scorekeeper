@@ -75,10 +75,10 @@ if (Meteor.isServer) {
   var K_RATING_COEFFICIENT = 50;
   var F_RATING_INTERVAL_SCALE_WEIGHT = 1000;
 
-  var updateRating = function(player_id, rating, opponent_rating, win) {
+  var updateRating = function(player_id, rating, opponent_rating, rating_to_adjust, win) {
     var S = (win ? 1 : 0);
     var We = winExpectancy(rating, opponent_rating);
-    var Rn = rating + (K_RATING_COEFFICIENT * (S - We));
+    var Rn = rating_to_adjust + (K_RATING_COEFFICIENT * (S - We));
 
     EloRatings.insert({
       date_time: Date.now(),
@@ -189,15 +189,15 @@ if (Meteor.isServer) {
           // 2 v 2
           var red_rating = (last_ro_rating.rating + last_rd_rating.rating) / 2.0;
           var blue_rating = (last_bo_rating.rating + last_bd_rating.rating) / 2.0;
-          var ro_rn = updateRating(ro_id, red_rating, blue_rating, red_won);
-          var rd_rn = updateRating(rd_id, red_rating, blue_rating, red_won);
-          var bo_rn = updateRating(bo_id, blue_rating, red_rating, !red_won);
-          var bd_rn = updateRating(bd_id, blue_rating, red_rating, !red_won);
+          var ro_rn = updateRating(ro_id, red_rating, blue_rating, last_ro_rating.rating, red_won);
+          var rd_rn = updateRating(rd_id, red_rating, blue_rating, last_rd_rating.rating, red_won);
+          var bo_rn = updateRating(bo_id, blue_rating, red_rating, last_bo_rating.rating, !red_won);
+          var bd_rn = updateRating(bd_id, blue_rating, red_rating, last_bd_rating.rating, !red_won);
         } else if ((typeof doc.rd == "undefined") &&
                    (typeof doc.bd == "undefined")) {
           // 1 v 1
-          var ro_rn = updateRating(ro_id, last_ro_rating.rating, last_bo_rating.rating, red_won);
-          var bo_rn = updateRating(bo_id, last_bo_rating.rating, last_ro_rating.rating, !red_won);
+          var ro_rn = updateRating(ro_id, last_ro_rating.rating, last_bo_rating.rating, last_ro_rating.rating, red_won);
+          var bo_rn = updateRating(bo_id, last_bo_rating.rating, last_ro_rating.rating, last_bo_rating.rating, !red_won);
         } else {
           // this is where I give more value to the single player, by not dividing
           // the team rating by 2, but instead by 1.5, since they are expected to
@@ -205,15 +205,15 @@ if (Meteor.isServer) {
           if (typeof doc.rd != "undefined") {
             // 2 red v 1 blue
             var red_rating = (last_ro_rating.rating + last_rd_rating.rating) / 1.5;
-            var ro_rn = updateRating(ro_id, red_rating, last_bo_rating.rating, red_won);
-            var rd_rn = updateRating(rd_id, red_rating, last_bo_rating.rating, red_won);
-            var bo_rn = updateRating(bo_id, last_bo_rating.rating, red_rating, !red_won);
+            var ro_rn = updateRating(ro_id, red_rating, last_bo_rating.rating, last_ro_rating.rating, red_won);
+            var rd_rn = updateRating(rd_id, red_rating, last_bo_rating.rating, last_rd_rating.rating, red_won);
+            var bo_rn = updateRating(bo_id, last_bo_rating.rating, red_rating, last_bo_rating.rating, !red_won);
           } else {
             // 1 red v 2 blue
             var blue_rating = (last_bo_rating.rating + last_bd_rating.rating) / 1.5;
-            var ro_rn = updateRating(ro_id, last_ro_rating.rating, blue_rating, red_won);
-            var bo_rn = updateRating(bo_id, blue_rating, last_ro_rating.rating, !red_won);
-            var bd_rn = updateRating(bd_id, blue_rating, last_ro_rating.rating, !red_won);
+            var ro_rn = updateRating(ro_id, last_ro_rating.rating, blue_rating, last_ro_rating.rating, red_won);
+            var bo_rn = updateRating(bo_id, blue_rating, last_ro_rating.rating, last_bo_rating.rating, !red_won);
+            var bd_rn = updateRating(bd_id, blue_rating, last_ro_rating.rating, last_bd_rating.rating, !red_won);
           }
         }
       },
