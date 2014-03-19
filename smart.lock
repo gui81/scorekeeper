@@ -9,10 +9,10 @@
         "version": "3.1.1-1"
       },
       "simple-schema": {
-        "version": "0.2.40"
+        "version": "0.2.42"
       },
       "collection2": {
-        "version": "0.3.8"
+        "version": "0.3.9"
       },
       "autoform": {
         "version": "0.4.20"
@@ -25,9 +25,6 @@
       },
       "spin": {
         "version": "0.2.2"
-      },
-      "typeahead": {
-        "version": "0.0.6"
       },
       "chartjs": {
         "version": "0.0.4"
@@ -46,13 +43,13 @@
       },
       "simple-schema": {
         "git": "https://github.com/aldeed/meteor-simple-schema.git",
-        "tag": "v0.2.40",
-        "commit": "d22892daa943e3567916effeaafd794ca6af5cd2"
+        "tag": "v0.2.42",
+        "commit": "85ce399ec94ecc6b9b2fdb114bddaceba82f3a03"
       },
       "collection2": {
         "git": "https://github.com/aldeed/meteor-collection2.git",
-        "tag": "v0.3.8",
-        "commit": "69aff2a21ba3c382f915e1f9dbcca2ad38edb6d5"
+        "tag": "v0.3.9",
+        "commit": "fdda9b5c87e9dcb5cb67087ecb6c9f21352d0cc2"
       },
       "autoform": {
         "git": "https://github.com/aldeed/meteor-autoform.git",
@@ -73,11 +70,6 @@
         "git": "https://github.com/SachaG/meteor-spin.git",
         "tag": "v0.2.2",
         "commit": "3f655f0016228e4195acc784c45d3e3a247dc39f"
-      },
-      "typeahead": {
-        "git": "https://github.com/sergeyt/meteor-typeahead.git",
-        "tag": "v0.0.6",
-        "commit": "79b17707e3244f87af08a1a59e1ac4088f3e8644"
       },
       "chartjs": {
         "git": "https://github.com/donskifarrell/meteor-chartjs.git",
