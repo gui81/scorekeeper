@@ -4,30 +4,54 @@ Matches = new Meteor.Collection('matches');
 Players = new Meteor.Collection('players');
 EloRatings = new Meteor.Collection('elo_ratings');
 
+var playerNames = function() {
+  // if the value does not exist, then let's just return so that the optional
+  // fields are handled correctly
+  if (this.value == "undefined" || !this.value) {
+    return;
+  }
+  // now try to find the player in our Collection
+  var player = Players.findOne({name: this.value});
+  // if player not found, or for some reason the name is not found, then return
+  // a custom message
+  if (!player || !player.name) {
+    return "nameNotFound";
+  }
+}
+
+// custom messages
+SimpleSchema.messages({
+  "nameNotFound": "Player name does not currently exist."
+});
+
 // here we are creating a SimpleSchema because date_time is in the Collection,
 // but not in the form
 MatchFormSchema = new SimpleSchema({
   ro: {
     type: String,
     label: "Red Offense*",
-    min: 2
+    min: 2,
+    custom: playerNames
   },
   rd: {
     type: String,
     label: "Red Defense",
     optional: true,
-    min: 2
+    min: 2,
+    custom: playerNames
   },
   bo: {
     type: String,
     label: "Blue Offense*",
-    min: 2
+    min: 2,
+    custom: playerNames
   },
   bd: {
     type: String,
     label: "Blue Defense",
     optional: true,
-    min: 2
+    min: 2,
+    custom: playerNames
   },
   rs: {
     type: Number,
@@ -128,12 +152,10 @@ if (Meteor.isServer) {
     if (id) {
       return id._id;
     } else {
-      // if an id did not exist, then it means that they were not added through
-      // the add player form, no biggie, we'll just add them as a Novice-Elite (750)
-      id = addPlayer(player_name, 750);
+      // it should never get here since the MatchFormSchema should handle
+      // making sure the player exists first
+      return undefined;
     }
-
-    return id;
   }
 
   Meteor.startup(function () {
