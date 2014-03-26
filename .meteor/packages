@@ -15,3 +15,5 @@ font-awesome
 iron-router
 spin
 chartjs
+typeahead
+jqueryui

@@ -116,7 +116,7 @@
 </template>
 
 <template name="game_form">
-  {{#autoForm schema=matchForm id="gameform" novalidate="novalidate"}}
+  {{#autoForm schema=matchForm id="gameform" novalidate="novalidate" validation="submit"}}
 <fieldset>
   <div class="row">
     <div class="col-sm-8 col-sm-offset-2">
@@ -125,13 +125,13 @@
         <div class="col-sm-6">
           <div class="form-group{{#if afFieldIsInvalid 'ro'}} has-error{{/if}}">
             <label style="text-align:right; color:red">Red Individual / Team <small>({{red_singles_wins}} / {{red_doubles_wins}})</small></label>
-            {{afFieldInput 'ro' placeholder="schemaLabel"}}
+            {{afFieldInput 'ro' placeholder="schemaLabel" class="typeahead" autocomplete="off"}}
             {{#if afFieldIsInvalid 'ro'}}
             <span class="help-block">{{afFieldMessage 'ro'}}</span>
             {{/if}}
           </div>
           <div class="form-group{{#if afFieldIsInvalid 'rd'}} has-error{{/if}}">
-            {{afFieldInput 'rd' placeholder="schemaLabel"}}
+            {{afFieldInput 'rd' placeholder="schemaLabel" class="typeahead" autocomplete="off"}}
             {{#if afFieldIsInvalid 'rd'}}
             <span class="help-block">{{afFieldMessage 'rd'}}</span>
             {{/if}}
@@ -142,13 +142,13 @@
         <div class="col-sm-6">
           <div class="form-group{{#if afFieldIsInvalid 'bo'}} has-error{{/if}}">
             <label style="text-align:left; color:blue">Blue Individual / Team <small>({{blue_singles_wins}} / {{blue_doubles_wins}})</small></label>
-            {{afFieldInput 'bo' placeholder="schemaLabel"}}
+            {{afFieldInput 'bo' placeholder="schemaLabel" class="typeahead" autocomplete="off"}}
             {{#if afFieldIsInvalid 'bo'}}
             <span class="help-block">{{afFieldMessage 'bo'}}</span>
             {{/if}}
           </div>
           <div class="form-group{{#if afFieldIsInvalid 'bd'}} has-error{{/if}}">
-            {{afFieldInput 'bd' placeholder="schemaLabel"}}
+            {{afFieldInput 'bd' placeholder="schemaLabel" class="typeahead" autocomplete="off"}}
             {{#if afFieldIsInvalid 'bd'}}
             <span class="help-block">{{afFieldMessage 'bd'}}</span>
             {{/if}}

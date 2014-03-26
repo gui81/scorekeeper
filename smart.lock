@@ -9,10 +9,10 @@
         "version": "3.1.1-1"
       },
       "simple-schema": {
-        "version": "0.2.42"
+        "version": "0.2.43"
       },
       "collection2": {
-        "version": "0.3.9"
+        "version": "0.3.11"
       },
       "autoform": {
         "version": "0.4.20"
@@ -28,6 +28,12 @@
       },
       "chartjs": {
         "version": "0.0.4"
+      },
+      "typeahead": {
+        "version": "0.0.6"
+      },
+      "jqueryui": {
+        "version": "1.10.4"
       }
     },
     "packages": {
@@ -43,13 +49,13 @@
       },
       "simple-schema": {
         "git": "https://github.com/aldeed/meteor-simple-schema.git",
-        "tag": "v0.2.42",
-        "commit": "85ce399ec94ecc6b9b2fdb114bddaceba82f3a03"
+        "tag": "v0.2.43",
+        "commit": "12ae1551c3fc6aec242525423db436e319e79bdf"
       },
       "collection2": {
         "git": "https://github.com/aldeed/meteor-collection2.git",
-        "tag": "v0.3.9",
-        "commit": "fdda9b5c87e9dcb5cb67087ecb6c9f21352d0cc2"
+        "tag": "v0.3.11",
+        "commit": "7e970671305657678e8508d8107d5e6c5e158559"
       },
       "autoform": {
         "git": "https://github.com/aldeed/meteor-autoform.git",
@@ -76,10 +82,25 @@
         "tag": "v0.0.4",
         "commit": "9d2adcd1de3728c8227e8eb7da0dcb2e0df21d0b"
       },
+      "typeahead": {
+        "git": "https://github.com/sergeyt/meteor-typeahead.git",
+        "tag": "v0.0.6",
+        "commit": "79b17707e3244f87af08a1a59e1ac4088f3e8644"
+      },
+      "jqueryui": {
+        "git": "https://github.com/mizzao/meteor-jqueryui.git",
+        "tag": "v1.10.4",
+        "commit": "c75906fc9e1e19abf1ad5b2963925122ff8a0336"
+      },
       "moment": {
         "git": "https://github.com/acreeger/meteor-moment.git",
         "tag": "v2.5.1",
         "commit": "8c9bc5d3fc96705057737cb9743d555417f6e551"
+      },
+      "build-fetcher": {
+        "git": "https://github.com/mizzao/meteor-build-fetcher.git",
+        "tag": "v0.1.0",
+        "commit": "e3813b1fc7f5c576e8e1fa4c51ae6f4687780a35"
       }
     }
   }

@@ -8,6 +8,8 @@
     "font-awesome": {},
     "iron-router": {},
     "spin": {},
-    "chartjs": {}
+    "chartjs": {},
+    "typeahead": {},
+    "jqueryui": {}
   }
 }
