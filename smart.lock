@@ -29,9 +29,6 @@
       "chartjs": {
         "version": "0.0.4"
       },
-      "typeahead": {
-        "version": "0.0.6"
-      },
       "jqueryui": {
         "version": "1.10.4"
       }
@@ -81,11 +78,6 @@
         "git": "https://github.com/donskifarrell/meteor-chartjs.git",
         "tag": "v0.0.4",
         "commit": "9d2adcd1de3728c8227e8eb7da0dcb2e0df21d0b"
-      },
-      "typeahead": {
-        "git": "https://github.com/sergeyt/meteor-typeahead.git",
-        "tag": "v0.0.6",
-        "commit": "79b17707e3244f87af08a1a59e1ac4088f3e8644"
       },
       "jqueryui": {
         "git": "https://github.com/mizzao/meteor-jqueryui.git",
