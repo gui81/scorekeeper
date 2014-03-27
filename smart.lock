@@ -9,7 +9,7 @@
         "version": "3.1.1-1"
       },
       "simple-schema": {
-        "version": "0.2.43"
+        "version": "0.2.44"
       },
       "collection2": {
         "version": "0.3.11"
@@ -46,8 +46,8 @@
       },
       "simple-schema": {
         "git": "https://github.com/aldeed/meteor-simple-schema.git",
-        "tag": "v0.2.43",
-        "commit": "12ae1551c3fc6aec242525423db436e319e79bdf"
+        "tag": "v0.2.44",
+        "commit": "08033dca60230df574160a727ede718ec04321ec"
       },
       "collection2": {
         "git": "https://github.com/aldeed/meteor-collection2.git",
