@@ -29,7 +29,7 @@ if (Meteor.isClient) {
     var h = dt.getHours();
     var min = dt.getMinutes();
     var s = dt.getSeconds();
-    return (y + " " + m + " " + d + " " + pad(h,2) + ":" + pad(min,2) + ":" + pad(s,2));
+    return (y + m + d + " " + pad(h,2) + ":" + pad(min,2) + ":" + pad(s,2));
   });
 
   Handlebars.registerHelper("findPlayerFromId", function(player_id) {
@@ -67,7 +67,7 @@ if (Meteor.isClient) {
   var findPlayerLatestEloRatingFromId = function(player_id) {
     var elo_rating = EloRatings.findOne({player_id: player_id}, {sort: {date_time: -1}});
     if (typeof elo_rating != "undefined") {
-      return +elo_rating.rating.toFixed(2);
+      return +elo_rating.rating.toFixed(0);
     } else {
       return 'N/A';
     }
@@ -250,7 +250,7 @@ if (Meteor.isClient) {
             name: player.name,
             wins: players[id].wins,
             losses: players[id].losses,
-            percent: +(per*100).toFixed(2) + "%",
+            percent: +(per*100).toFixed(0) + "%",
             rating: findPlayerLatestEloRatingFromId(id)
           });
         }
@@ -291,7 +291,7 @@ if (Meteor.isClient) {
             def_player: d_player.name,
             wins: players[o_id][d_id].wins,
             losses: players[o_id][d_id].losses,
-            percent: +(per*100).toFixed(2) + "%"
+            percent: +(per*100).toFixed(0) + "%"
           });
         }
       }
