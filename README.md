@@ -6,7 +6,14 @@ geared only for foosball.
 
 ## Quick Start
 
-Checkout scorekeeper:
+### Checkout scorekeeper:
     git clone https://github.com/gui81/scorekeeper.git
 
-TODO (lej): add some more details here
+### Get Meteor and Meteorite
+    install [meteor.js](https://www.meteor.com/)
+    install [meteorite](http://oortcloud.github.io/meteorite/)
+
+### Run
+    cd scorekeeper
+    mrt update
+    meteor
