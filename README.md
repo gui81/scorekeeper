@@ -10,8 +10,7 @@ geared only for foosball.
     git clone https://github.com/gui81/scorekeeper.git
 
 ### Get Meteor and Meteorite
-    install [meteor.js](https://www.meteor.com/)
-    install [meteorite](http://oortcloud.github.io/meteorite/)
+Install [meteor.js] (https://www.meteor.com/) and install [meteorite] (http://oortcloud.github.io/meteorite/).
 
 ### Run
     cd scorekeeper
