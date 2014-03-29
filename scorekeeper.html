@@ -3,16 +3,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
-<body>
-</body>
-
 <template name="layout">
   <div id="wrapper">
-    {{yield 'sidebar'}}
-    {{yield 'header'}}
+    {{> yield region='sidebar'}}
+    {{> yield region='header'}}
 
     <div id="page-content-wrapper" class="page-content inset">
-      {{yield}}
+      {{> yield}}
     </div>
   </div>
 </template>
@@ -44,6 +41,7 @@
 </template>
 
 <template name="home">
+
 </template>
 
 <template name="addplayer">
@@ -52,22 +50,22 @@
 </template>
 
 <template name="player_form">
-  {{#autoForm schema=playerForm id="playerform" novalidate="novalidate"}}
+  {{#autoForm schema=playerForm id="playerform" novalidate="novalidate" type="method" meteormethod="add_player"}}
     <fieldset>
       <div class="row">
         <div class="col-sm-6 col-sm-offset-3">
-          <div class="form-group{{#if afFieldIsInvalid 'player_name'}} has-error{{/if}}">
-            <label style="text-align:left">{{afFieldLabel 'player_name'}}</label>
-            {{afFieldInput 'player_name'}}
-            {{#if afFieldIsInvalid 'player_name'}}
-            <span class="help-block">{{afFieldMessage 'player_name'}}</span>
+          <div class="form-group{{#if afFieldIsInvalid name='player_name'}} has-error{{/if}}">
+            <label style="text-align:left">{{> afFieldLabel name='player_name'}}</label>
+            {{> afFieldInput name='player_name'}}
+            {{#if afFieldIsInvalid name='player_name'}}
+            <span class="help-block">{{> afFieldMessage name='player_name'}}</span>
             {{/if}}
           </div>
-          <div class="form-group{{#if afFieldIsInvalid 'rating'}} has-error{{/if}}">
-            <label style="text-align:left">{{afFieldLabel 'rating'}}</label>
-            {{afFieldInput 'rating'}}
-            {{#if afFieldIsInvalid 'rating'}}
-            <span class="help-block">{{afFieldMessage 'rating'}}</span>
+          <div class="form-group{{#if afFieldIsInvalid name='rating'}} has-error{{/if}}">
+            <label style="text-align:left">{{> afFieldLabel name='rating'}}</label>
+            {{> afFieldInput name='rating'}}
+            {{#if afFieldIsInvalid name='rating'}}
+            <span class="help-block">{{> afFieldMessage name='rating'}}</span>
             {{/if}}
           </div>
           <div style="text-align:left">
@@ -78,7 +76,7 @@
             Master = 2250<br>
           </div>
           <div style="text-align:center">
-            <button type="submit" id="submit" class="btn btn-primary" data-meteor-method="add_player">Submit</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
           </div>
         </div>
       </div>
@@ -117,79 +115,78 @@
 </template>
 
 <template name="game_form">
-  {{#autoForm schema=matchForm id="gameform" novalidate="novalidate"}}
-<fieldset>
-  <div class="row">
-    <div class="col-sm-8 col-sm-offset-2">
+  {{#autoForm schema=matchForm id="gameform" novalidate="novalidate" type="method" meteormethod="add_match"}}
+    <fieldset>
       <div class="row">
-        <!-- Red Team -->
-        <div class="col-sm-6">
-          <div class="form-group{{#if afFieldIsInvalid 'ro'}} has-error{{/if}}">
-            <label style="text-align:right; color:red">Red Individual / Team <small>({{red_singles_wins}} / {{red_doubles_wins}})</small></label>
-            {{afFieldInput 'ro' placeholder="schemaLabel" class="input_autocomplete"}}
-            {{#if afFieldIsInvalid 'ro'}}
-            <span class="help-block">{{afFieldMessage 'ro'}}</span>
-            {{/if}}
-          </div>
-          <div class="form-group{{#if afFieldIsInvalid 'rd'}} has-error{{/if}}">
-            {{afFieldInput 'rd' placeholder="schemaLabel" class="input_autocomplete"}}
-            {{#if afFieldIsInvalid 'rd'}}
-            <span class="help-block">{{afFieldMessage 'rd'}}</span>
-            {{/if}}
-          </div>
-        </div>
+        <div class="col-sm-8 col-sm-offset-2">
+          <div class="row">
+            <!-- Red Team -->
+            <div class="col-sm-6">
+              <div class="form-group{{#if afFieldIsInvalid name='ro'}} has-error{{/if}}">
+                <label style="text-align:right; color:red">Red Individual / Team <small>({{red_singles_wins}} / {{red_doubles_wins}})</small></label>
+                {{> afFieldInput name='ro' placeholder="schemaLabel" class="input_autocomplete"}}
+                {{#if afFieldIsInvalid name='ro'}}
+                <span class="help-block">{{> afFieldMessage name='ro'}}</span>
+                {{/if}}
+              </div>
+              <div class="form-group{{#if afFieldIsInvalid name='rd'}} has-error{{/if}}">
+                {{> afFieldInput name='rd' placeholder="schemaLabel" class="input_autocomplete"}}
+                {{#if afFieldIsInvalid name='rd'}}
+                <span class="help-block">{{> afFieldMessage name='rd'}}</span>
+                {{/if}}
+              </div>
+            </div>
 
-        <!-- Blue Team -->
-        <div class="col-sm-6">
-          <div class="form-group{{#if afFieldIsInvalid 'bo'}} has-error{{/if}}">
-            <label style="text-align:left; color:blue">Blue Individual / Team <small>({{blue_singles_wins}} / {{blue_doubles_wins}})</small></label>
-            {{afFieldInput 'bo' placeholder="schemaLabel" class="input_autocomplete"}}
-            {{#if afFieldIsInvalid 'bo'}}
-            <span class="help-block">{{afFieldMessage 'bo'}}</span>
-            {{/if}}
+            <!-- Blue Team -->
+            <div class="col-sm-6">
+              <div class="form-group{{#if afFieldIsInvalid name='bo'}} has-error{{/if}}">
+                <label style="text-align:left; color:blue">Blue Individual / Team <small>({{blue_singles_wins}} / {{blue_doubles_wins}})</small></label>
+                {{> afFieldInput name='bo' placeholder="schemaLabel" class="input_autocomplete"}}
+                {{#if afFieldIsInvalid name='bo'}}
+                <span class="help-block">{{> afFieldMessage name='bo'}}</span>
+                {{/if}}
+              </div>
+              <div class="form-group{{#if afFieldIsInvalid name='bd'}} has-error{{/if}}">
+                {{> afFieldInput name='bd' placeholder="schemaLabel" class="input_autocomplete"}}
+                {{#if afFieldIsInvalid name='bd'}}
+                <span class="help-block">{{> afFieldMessage name='bd'}}</span>
+                {{/if}}
+              </div>
+            </div>
           </div>
-          <div class="form-group{{#if afFieldIsInvalid 'bd'}} has-error{{/if}}">
-            {{afFieldInput 'bd' placeholder="schemaLabel" class="input_autocomplete"}}
-            {{#if afFieldIsInvalid 'bd'}}
-            <span class="help-block">{{afFieldMessage 'bd'}}</span>
-            {{/if}}
-          </div>
-        </div>
-      </div>
 
+          <div class="row">
+            <hr>
+            <div class="col-sm-12" style="text-align:center">
+              <h4 align="center">Score</h4>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group{{#if afFieldIsInvalid name='rs'}} has-error{{/if}}">
+                {{> afFieldInput name='rs' placeholder="schemaLabel"}}
+                {{#if afFieldIsInvalid name='rs'}}
+                <span class="help-block">{{> afFieldMessage name='rs'}}</span>
+                {{/if}}
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group{{#if afFieldIsInvalid name='bs'}} has-error{{/if}}">
+                {{> afFieldInput name='bs' placeholder="schemaLabel"}}
+                {{#if afFieldIsInvalid name='bs'}}
+                <span class="help-block">{{> afFieldMessage name='bs'}}</span>
+                {{/if}}
+              </div>
+            </div>
 
-      <div class="row">
-        <hr>
-        <div class="col-sm-12" style="text-align:center">
-          <h4 align="center">Score</h4>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-sm-6">
-          <div class="form-group{{#if afFieldIsInvalid 'rs'}} has-error{{/if}}">
-            {{afFieldInput 'rs' placeholder="schemaLabel"}}
-            {{#if afFieldIsInvalid 'rs'}}
-            <span class="help-block">{{afFieldMessage 'rs'}}</span>
-            {{/if}}
+            <div class="row">
+              <div class="col-sm-12" style="text-align:center">
+                <button type="submit" class="btn btn-primary">Submit</button>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="col-sm-6">
-          <div class="form-group{{#if afFieldIsInvalid 'bs'}} has-error{{/if}}">
-            {{afFieldInput 'bs' placeholder="schemaLabel"}}
-            {{#if afFieldIsInvalid 'bs'}}
-            <span class="help-block">{{afFieldMessage 'bs'}}</span>
-            {{/if}}
-          </div>
-        </div>
-      </fieldset>
-      <div class="row">
-        <div class="col-sm-12" style="text-align:center">
-          <button type="submit" id="submit" class="btn btn-primary" data-meteor-method="add_match">Submit</button>
-        </div>
       </div>
-      </div>
-    </div>
-    </div>
     </fieldset>
   {{/autoForm}}
 </template>

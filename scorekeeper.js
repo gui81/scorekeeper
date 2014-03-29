@@ -50,17 +50,17 @@ if (Meteor.isClient) {
     }
   });
 
-  var mForm = new AutoForm(MatchFormSchema);
+//  var mForm = new AutoForm(MatchFormSchema);
   Template.game_form.helpers({
     matchForm: function() {
-      return mForm;
+      return MatchFormSchema;
     }
   });
 
-  var pForm = new AutoForm(PlayerFormSchema);
+//  var pForm = new AutoForm(PlayerFormSchema);
   Template.player_form.helpers({
     playerForm: function() {
-      return pForm;
+      return PlayerFormSchema;
     }
   });
 
@@ -123,6 +123,10 @@ if (Meteor.isClient) {
       $("#wrapper").toggleClass("active");
     }
   });
+
+  Template.home.rendered = function() {
+
+  }
 
   Template.individual_stats.rendered = function() {
     $("table#individual_stats_table").tablesorter({sortList:[[4,1]]});

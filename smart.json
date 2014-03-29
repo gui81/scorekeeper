@@ -4,11 +4,13 @@
     "bootstrap-3": {},
     "simple-schema": {},
     "collection2": {},
-    "autoform": {},
+    "autoform": {
+      "git": "https://github.com/aldeed/meteor-autoform.git",
+      "branch": "ui"
+    },
     "font-awesome": {},
     "iron-router": {},
     "spin": {},
-    "chartjs": {},
     "jqueryui": {}
   }
 }

@@ -9,25 +9,23 @@
         "version": "3.1.1-1"
       },
       "simple-schema": {
-        "version": "0.2.44"
+        "version": "0.2.45"
       },
       "collection2": {
         "version": "0.3.11"
       },
       "autoform": {
-        "version": "0.4.20"
+        "git": "https://github.com/aldeed/meteor-autoform.git",
+        "branch": "ui"
       },
       "font-awesome": {
         "version": "4.0.3"
       },
       "iron-router": {
-        "version": "0.6.4"
+        "version": "0.7.0"
       },
       "spin": {
         "version": "0.2.2"
-      },
-      "chartjs": {
-        "version": "0.0.4"
       },
       "jqueryui": {
         "version": "1.10.4"
@@ -46,8 +44,8 @@
       },
       "simple-schema": {
         "git": "https://github.com/aldeed/meteor-simple-schema.git",
-        "tag": "v0.2.44",
-        "commit": "08033dca60230df574160a727ede718ec04321ec"
+        "tag": "v0.2.45",
+        "commit": "27a5a943a70a7376c90f18d2e2a4a122c6fc73fb"
       },
       "collection2": {
         "git": "https://github.com/aldeed/meteor-collection2.git",
@@ -56,8 +54,8 @@
       },
       "autoform": {
         "git": "https://github.com/aldeed/meteor-autoform.git",
-        "tag": "v0.4.20",
-        "commit": "d4d40a5356f9577a7d95d3526045035f3f1135af"
+        "branch": "ui",
+        "commit": "6b7313a6de807d7adbafc6acf3b4bf273df4b693"
       },
       "font-awesome": {
         "git": "https://github.com/nate-strauser/meteor-font-awesome.git",
@@ -66,18 +64,13 @@
       },
       "iron-router": {
         "git": "https://github.com/EventedMind/iron-router.git",
-        "tag": "v0.6.4",
-        "commit": "927bbaed1b87894fb6fb70807f74ff3a5bd89f29"
+        "tag": "v0.7.0",
+        "commit": "05f34bc48c4cad9fdaa366c1ddcabe6980232ece"
       },
       "spin": {
         "git": "https://github.com/SachaG/meteor-spin.git",
         "tag": "v0.2.2",
         "commit": "3f655f0016228e4195acc784c45d3e3a247dc39f"
-      },
-      "chartjs": {
-        "git": "https://github.com/donskifarrell/meteor-chartjs.git",
-        "tag": "v0.0.4",
-        "commit": "9d2adcd1de3728c8227e8eb7da0dcb2e0df21d0b"
       },
       "jqueryui": {
         "git": "https://github.com/mizzao/meteor-jqueryui.git",
@@ -88,6 +81,11 @@
         "git": "https://github.com/acreeger/meteor-moment.git",
         "tag": "v2.5.1",
         "commit": "8c9bc5d3fc96705057737cb9743d555417f6e551"
+      },
+      "blaze-layout": {
+        "git": "https://github.com/EventedMind/blaze-layout.git",
+        "tag": "v0.2.2",
+        "commit": "8bc53798fe5965669ae67c72f91829fcfdceabfd"
       },
       "build-fetcher": {
         "git": "https://github.com/mizzao/meteor-build-fetcher.git",
