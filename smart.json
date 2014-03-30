@@ -11,6 +11,7 @@
     "font-awesome": {},
     "iron-router": {},
     "spin": {},
-    "jqueryui": {}
+    "jqueryui": {},
+    "footable": {}
   }
 }

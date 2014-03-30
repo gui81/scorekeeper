@@ -1,5 +1,5 @@
 if (Meteor.isClient) {
-  SimpleSchema.debug = true;
+  // SimpleSchema.debug = true;
   Meteor.Spinner.options = {
     lines: 13, // The number of lines to draw
     length: 5, // The length of each line
@@ -118,6 +118,13 @@ if (Meteor.isClient) {
     }
   }
 
+  var printObjectProperties = function(obj) {
+    console.log("object:");
+    for (var param in obj) {
+      console.log("  " + param + " = " + obj[param]);
+    }
+  }
+
   Template.header.events({
     "click #menu-toggle": function(evt, tmpl) {
       $("#wrapper").toggleClass("active");
@@ -129,19 +136,19 @@ if (Meteor.isClient) {
   }
 
   Template.individual_stats.rendered = function() {
-    $("table#individual_stats_table").tablesorter({sortList:[[4,1]]});
+    $('.footable').footable();
   }
 
   Template.team_stats.rendered = function() {
-    $("table#team_stats_table").tablesorter({sortList:[[4,1]]});
+    $('.footable').footable();
   }
 
   Template.last_10_matches.rendered = function() {
-    $("table#last_10_matches_table").tablesorter({sortList:[[0,1]]});
+    $('.footable').footable();
   }
 
   Template.last_10_players.rendered = function() {
-    $("table#last_10_players_table").tablesorter({sortList:[[0,0]]});
+    $('.footable').footable();
   }
 
   Template.game_form.rendered = function() {
@@ -218,7 +225,11 @@ if (Meteor.isClient) {
 
   Template.last_10_players.helpers({
     players: function() {
-      return Players.find({}, {limit: 10});
+//      var players = Players.find({}, {sort: {date_time: -1}, limit: 10});
+//      players.forEach(function(player) {
+//        printObjectProperties(player);
+//      });
+      return Players.find({}, {sort: {date_time: -1}, limit: 10});
     }
   });
 

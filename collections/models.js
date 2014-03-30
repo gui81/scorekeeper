@@ -1,5 +1,5 @@
-// using Collections2 pkg to validate inserts against schema to ensure data
-// integrity
+// using autoform, simple-schema, and Collections2 packages to validate inserts
+// against schema to ensure data integrity
 Matches = new Meteor.Collection('matches');
 Players = new Meteor.Collection('players');
 EloRatings = new Meteor.Collection('elo_ratings');
@@ -134,6 +134,7 @@ if (Meteor.isServer) {
 
     // didn't find player above, so add one now
     id = Players.insert({
+      date_time: Date.now(),
       name: player_name
     });
 

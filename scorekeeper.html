@@ -89,7 +89,7 @@
   <div class="row">
     <div class="col-sm-6 col-sm-offset-3">
       <h3 align="center">Recently Added Players</h3>
-      <table class="table table-hover table-striped tablesorter" id="last_10_players_table">
+      <table class="footable table table-hover table-striped" id="last_10_players_table">
         <thead>
           <tr>
             <th>Name</th>
@@ -196,14 +196,14 @@
   <div class="row">
     <div class="col-sm-10 col-sm-offset-1">
       <h3 align="center">Recent Matches</h3>
-      <table class="table table-hover table-striped tablesorter" id="last_10_matches_table">
+      <table class="footable table table-hover table-striped" id="last_10_matches_table">
         <thead>
           <tr>
             <th>Date/Time</th>
-            <th>Red Off</th>
-            <th>Red Def</th>
-            <th>Blue Off</th>
-            <th>Blue Def</th>
+            <th data-hide="phone">Red Off</th>
+            <th data-hide="phone">Red Def</th>
+            <th data-hide="phone">Blue Off</th>
+            <th data-hide="phone">Blue Def</th>
             <th>Red Score</th>
             <th>Blue Score</th>
           </tr>
@@ -232,14 +232,14 @@
       <div class="row">
         <div class="col-sm-12"><h2 align="center">Individual Stats</h2></div>
         <div class="col-sm-12" align="center">
-        <table class="table table-hover table-striped tablesorter" id="individual_stats_table">
+        <table class="footable table table-hover table-striped" id="individual_stats_table">
         <thead>
           <tr>
             <th>Name</th>
-            <th>Wins</th>
-            <th>Losses</th>
-            <th>Win %</th>
-            <th>Rating</th>
+            <th data-hide="phone">Wins</th>
+            <th data-hide="phone">Losses</th>
+            <th data-hide="phone">Win %</th>
+            <th data-sort-initial="descending">Rating</th>
           </tr>
           </thead>
           <tbody>
@@ -266,14 +266,14 @@
         <div class="row">
           <div class="col-sm-12"><h2 align="center">Team Stats</h2></div>
           <div class="col-sm-12">
-          <table class="table table-hover table-striped tablesorter" id="team_stats_table">
+          <table class="footable table table-hover table-striped" id="team_stats_table">
             <thead>
             <tr>
               <th>Off Player</th>
               <th>Def Player</th>
-              <th>Wins</th>
-              <th>Losses</th>
-              <th>Win %</th>
+              <th data-hide="phone">Wins</th>
+              <th data-hide="phone">Losses</th>
+              <th data-sort-initial="descending">Win %</th>
             </tr>
             </thead>
             <tbody>
