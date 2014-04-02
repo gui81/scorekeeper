@@ -132,13 +132,16 @@ if (Meteor.isClient) {
   });
 
   Template.home.rendered = function() {
-    /*These lines are all chart setup.  Pick and choose which chart features you want to utilize. */
+    // These lines are all chart setup.
+    // Pick and choose which chart features you want to utilize.
     nv.addGraph(function() {
       var chart = nv.models.lineChart()
-              .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
-              .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
-              .transitionDuration(350)  //how fast do you want the lines to transition?
-              .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+              .margin({left: 75, right: 30})  // Adjust chart margins to give the
+                                              //   axes some breathing room
+              .useInteractiveGuideline(true)  // We want nice looking tooltips
+                                              //   and a guideline
+              .transitionDuration(350)  //how fast do you want the lines to transition
+              .showLegend(true)       //Show the legend, allow users toggle line series
               .showYAxis(true)        //Show the y-axis
               .showXAxis(true)        //Show the x-axis
           ;
@@ -156,9 +159,9 @@ if (Meteor.isClient) {
       /* Done setting the chart up? Time to render it!*/
       var myData = getPlayerData();
 
-      d3.select('#chart svg')    //Select the <svg> element you want to render the chart in.
-          .datum(myData)         //Populate the <svg> element with chart data...
-          .call(chart);          //Finally, render the chart!
+      d3.select('#chart svg')  //Select the <svg> element to render the chart in
+          .datum(myData)       //Populate the <svg> element with chart data...
+          .call(chart);        //Finally, render the chart!
 
       //Update the chart when window resizes.
       nv.utils.windowResize(function() { chart.update() });

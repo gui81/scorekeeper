@@ -14,5 +14,4 @@ Install [meteor.js] (https://www.meteor.com/) and install [meteorite] (http://oo
 
 ### Run
     cd scorekeeper
-    mrt update
-    meteor
+    mrt
