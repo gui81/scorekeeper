@@ -132,7 +132,75 @@ if (Meteor.isClient) {
   });
 
   Template.home.rendered = function() {
+    /*These lines are all chart setup.  Pick and choose which chart features you want to utilize. */
+    nv.addGraph(function() {
+      var chart = nv.models.lineChart()
+              .margin({left: 100})  //Adjust chart margins to give the x-axis some breathing room.
+              .useInteractiveGuideline(true)  //We want nice looking tooltips and a guideline!
+              .transitionDuration(350)  //how fast do you want the lines to transition?
+              .showLegend(true)       //Show the legend, allowing users to turn on/off line series.
+              .showYAxis(true)        //Show the y-axis
+              .showXAxis(true)        //Show the x-axis
+          ;
 
+      chart.xAxis     //Chart x-axis settings
+          // .axisLabel('Date/Time')
+          .tickFormat(function(d) {
+            return d3.time.format('%x')(new Date(d));
+          });
+
+      chart.yAxis     //Chart y-axis settings
+          .axisLabel('Rating (Elo)')
+          .tickFormat(d3.format('.0f'));
+
+      /* Done setting the chart up? Time to render it!*/
+      var myData = getPlayerData();
+
+      d3.select('#chart svg')    //Select the <svg> element you want to render the chart in.
+          .datum(myData)         //Populate the <svg> element with chart data...
+          .call(chart);          //Finally, render the chart!
+
+      //Update the chart when window resizes.
+      nv.utils.windowResize(function() { chart.update() });
+      return chart;
+    });
+
+    getPlayerData();
+
+    /*
+     * populate data for players
+     */
+    function getPlayerData() {
+      // get top ten players, i.e. whose Elo Ratings are the highest
+      var players = Players.find({});
+      var player_ratings = [];
+      players.forEach(function(player) {
+        var rating = EloRatings.findOne({player_id: player._id}, {sort: {date_time: -1}});
+        player_ratings.push({player_id: player._id, player_name: player.name, rating: rating.rating});
+      });
+
+      player_ratings.sort(function(a,b) {
+        return (b.rating - a.rating);
+      });
+      // now limit the list to just 10 entries
+      player_ratings.length = 10;
+
+      var data = [];
+      player_ratings.forEach(function(pl_r) {
+        var ratings = EloRatings.find({player_id: pl_r.player_id});
+        var values = [];
+        ratings.forEach(function(rating) {
+          values.push({x: rating.date_time, y: rating.rating});
+        });
+
+        data.push({
+          values: values,
+          key: pl_r.player_name
+        });
+      });
+
+      return data;
+    }
   }
 
   Template.individual_stats.rendered = function() {

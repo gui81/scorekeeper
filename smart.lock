@@ -32,6 +32,9 @@
       },
       "footable": {
         "version": "2.0.1-4.4"
+      },
+      "nvd3js": {
+        "version": "0.1.0"
       }
     },
     "packages": {
@@ -84,6 +87,11 @@
         "git": "https://github.com/weits/meteor-footable.git",
         "tag": "v2.0.1-4.4",
         "commit": "505fc083033342e92bece07fdbee4685fbc8db37"
+      },
+      "nvd3js": {
+        "git": "https://github.com/ouuyeah/nvd3js.git",
+        "tag": "v0.1.0",
+        "commit": "89a8c66bb3b35d25900d31195ae0b318e4176ddb"
       },
       "moment": {
         "git": "https://github.com/acreeger/meteor-moment.git",

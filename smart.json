@@ -12,6 +12,7 @@
     "iron-router": {},
     "spin": {},
     "jqueryui": {},
-    "footable": {}
+    "footable": {},
+    "nvd3js": {}
   }
 }

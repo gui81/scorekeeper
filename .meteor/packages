@@ -15,3 +15,5 @@ iron-router
 spin
 jqueryui
 footable
+d3
+nvd3js
