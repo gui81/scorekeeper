@@ -50,14 +50,12 @@ if (Meteor.isClient) {
     }
   });
 
-//  var mForm = new AutoForm(MatchFormSchema);
   Template.game_form.helpers({
     matchForm: function() {
       return MatchFormSchema;
     }
   });
 
-//  var pForm = new AutoForm(PlayerFormSchema);
   Template.player_form.helpers({
     playerForm: function() {
       return PlayerFormSchema;
