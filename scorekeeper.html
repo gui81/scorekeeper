@@ -95,7 +95,7 @@
         <thead>
           <tr>
             <th>Name</th>
-            <th>Elo Rating</th>
+            <th data-type="numeric">Elo Rating</th>
           </tr>
         </thead>
         <tbody>
@@ -201,19 +201,19 @@
       <table class="footable table table-hover table-striped" id="last_10_matches_table">
         <thead>
           <tr>
-            <th>Date/Time</th>
+            <th data-type="numeric">Date/Time</th>
             <th data-hide="phone">Red Off</th>
             <th data-hide="phone">Red Def</th>
             <th data-hide="phone">Blue Off</th>
             <th data-hide="phone">Blue Def</th>
-            <th>Red Score</th>
-            <th>Blue Score</th>
+            <th data-type="numeric">Red Score</th>
+            <th data-type="numeric">Blue Score</th>
           </tr>
         </thead>
         <tbody>
           {{#each matches}}
             <tr>
-              <td>{{formatDate date_time}}</td>
+              <td data-value="{{date_time}}">{{formatDate date_time}}</td>
               <td>{{findPlayerFromId ro_id}}</td>
               <td>{{findPlayerFromId rd_id}}</td>
               <td>{{findPlayerFromId bo_id}}</td>
@@ -238,10 +238,10 @@
           <thead>
           <tr>
             <th>Name</th>
-            <th data-hide="phone">Wins</th>
-            <th data-hide="phone">Losses</th>
-            <th data-hide="phone">Win %</th>
-            <th data-sort-initial="descending">Rating</th>
+            <th data-type="numeric" data-hide="phone">Wins</th>
+            <th data-type="numeric" data-hide="phone">Losses</th>
+            <th data-type="numeric" data-hide="phone">Win %</th>
+            <th data-type="numeric" data-sort-initial="descending">Rating</th>
           </tr>
           </thead>
           <tbody>
@@ -282,9 +282,9 @@
             <tr>
               <th>Off Player</th>
               <th>Def Player</th>
-              <th data-hide="phone">Wins</th>
-              <th data-hide="phone">Losses</th>
-              <th data-sort-initial="descending">Win %</th>
+              <th data-type="numeric" data-hide="phone">Wins</th>
+              <th data-type="numeric" data-hide="phone">Losses</th>
+              <th data-type="numeric" data-sort-initial="descending">Win %</th>
             </tr>
             </thead>
             <tbody>
