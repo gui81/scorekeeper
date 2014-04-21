@@ -42,7 +42,7 @@ if (Meteor.isClient) {
   });
 
   Handlebars.registerHelper("findPlayerFirstEloRatingFromId", function(player_id) {
-    var elo_rating = EloRatings.findOne({player_id: player_id}, {sort: {date_time: 1}});
+    var elo_rating = CombinedRatings.findOne({player_id: player_id}, {sort: {date_time: 1}});
     if (typeof elo_rating != "undefined") {
       return elo_rating.rating;
     } else {
@@ -62,8 +62,8 @@ if (Meteor.isClient) {
     }
   });
 
-  var findPlayerLatestEloRatingFromId = function(player_id) {
-    var elo_rating = EloRatings.findOne({player_id: player_id}, {sort: {date_time: -1}});
+  var findPlayerLatestEloRatingFromId = function(player_id, collection) {
+    var elo_rating = collection.findOne({player_id: player_id}, {sort: {date_time: -1}});
     if (typeof elo_rating != "undefined") {
       return +elo_rating.rating.toFixed(0);
     } else {
@@ -116,20 +116,7 @@ if (Meteor.isClient) {
     }
   }
 
-  var printObjectProperties = function(obj) {
-    console.log("object:");
-    for (var param in obj) {
-      console.log("  " + param + " = " + obj[param]);
-    }
-  }
-
-  Template.header.events({
-    "click #menu-toggle": function(evt, tmpl) {
-      $("#wrapper").toggleClass("active");
-    }
-  });
-
-  Template.home.rendered = function() {
+  var addGraph = function(collection, chart_dom) {
     // These lines are all chart setup.
     // Pick and choose which chart features you want to utilize.
     nv.addGraph(function() {
@@ -145,7 +132,7 @@ if (Meteor.isClient) {
           ;
 
       chart.xAxis     //Chart x-axis settings
-          // .axisLabel('Date/Time')
+       // .axisLabel('Date/Time')
           .tickFormat(function(d) {
             return d3.time.format('%x')(new Date(d));
           });
@@ -155,29 +142,29 @@ if (Meteor.isClient) {
           .tickFormat(d3.format('.0f'));
 
       /* Done setting the chart up? Time to render it!*/
-      var myData = getPlayerData();
+      var myData = getChartData(collection);
 
-      d3.select('#chart svg')  //Select the <svg> element to render the chart in
-          .datum(myData)       //Populate the <svg> element with chart data...
-          .call(chart);        //Finally, render the chart!
+      d3.select(chart_dom)  //Select the <svg> element to render the chart in
+          .datum(myData)    //Populate the <svg> element with chart data...
+          .call(chart);     //Finally, render the chart!
 
       //Update the chart when window resizes.
       nv.utils.windowResize(function() { chart.update() });
       return chart;
     });
 
-    getPlayerData();
-
     /*
      * populate data for players
      */
-    function getPlayerData() {
+    function getChartData(collection) {
       // get top ten players, i.e. whose Elo Ratings are the highest
       var players = Players.find({});
       var player_ratings = [];
       players.forEach(function(player) {
-        var rating = EloRatings.findOne({player_id: player._id}, {sort: {date_time: -1}});
-        player_ratings.push({player_id: player._id, player_name: player.name, rating: rating.rating});
+        var rating = collection.findOne({player_id: player._id}, {sort: {date_time: -1}});
+        if (rating) {
+          player_ratings.push({player_id: player._id, player_name: player.name, rating: rating.rating});
+        }
       });
 
       player_ratings.sort(function(a,b) {
@@ -188,7 +175,7 @@ if (Meteor.isClient) {
 
       var data = [];
       player_ratings.forEach(function(pl_r) {
-        var ratings = EloRatings.find({player_id: pl_r.player_id});
+        var ratings = collection.find({player_id: pl_r.player_id});
         var values = [];
         ratings.forEach(function(rating) {
           values.push({x: rating.date_time, y: rating.rating});
@@ -202,6 +189,26 @@ if (Meteor.isClient) {
 
       return data;
     }
+  }
+
+  var printObjectProperties = function(obj) {
+    console.log("object:");
+    for (var param in obj) {
+      console.log("  " + param + " = " + obj[param]);
+    }
+  }
+
+  Template.header.events({
+    "click #menu-toggle": function(evt, tmpl) {
+      $("#wrapper").toggleClass("active");
+    }
+  });
+
+  Template.home.rendered = function() {
+    addGraph(CombinedRatings, '#combined_chart svg');
+    addGraph(SinglesRatings, '#singles_chart svg');
+    addGraph(OffenseRatings, '#offense_chart svg');
+    addGraph(DefenseRatings, '#defense_chart svg');
   }
 
   Template.individual_stats.rendered = function() {
@@ -335,7 +342,10 @@ if (Meteor.isClient) {
             wins: players[id].wins,
             losses: players[id].losses,
             percent: +(per*100).toFixed(0) + "%",
-            rating: findPlayerLatestEloRatingFromId(id)
+            combined_rating: findPlayerLatestEloRatingFromId(id, CombinedRatings),
+            singles_rating: findPlayerLatestEloRatingFromId(id, SinglesRatings),
+            offense_rating: findPlayerLatestEloRatingFromId(id, OffenseRatings),
+            defense_rating: findPlayerLatestEloRatingFromId(id, DefenseRatings)
           });
         }
       }

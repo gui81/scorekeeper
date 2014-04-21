@@ -41,8 +41,24 @@
 </template>
 
 <template name="home">
-  <div id="chart">
-    <svg style="min-height: 300"></svg>
+  <h3>Combined Rating</h3>
+  <div id="combined_chart">
+    <svg style="min-height: 500"></svg>
+  </div>
+
+  <h3>Singles Rating</h3>
+  <div id="singles_chart">
+    <svg style="min-height: 500"></svg>
+  </div>
+
+  <h3>Doubles Offense Rating</h3>
+  <div id="offense_chart">
+    <svg style="min-height: 500"></svg>
+  </div>
+
+  <h3>Doubles Defense Rating</h3>
+  <div id="defense_chart">
+    <svg style="min-height: 500"></svg>
   </div>
 </template>
 
@@ -122,10 +138,13 @@
       <div class="row">
         <div class="col-sm-8 col-sm-offset-2">
           <div class="row">
-            <!-- Red Team -->
+            <!-- Red Team / Yellow Team -->
+            <!-- we switched to a new foosball table, which has yellow and black sides -->
             <div class="col-sm-6">
               <div class="form-group{{#if afFieldIsInvalid name='ro'}} has-error{{/if}}">
-                <label style="text-align:right; color:red">Red Individual / Team <small>({{red_singles_wins}} / {{red_doubles_wins}})</small></label>
+                <label style="text-align:left">
+                  <span style="color: red">Red</span> or <span style="color: yellow">Yellow</span> <br>
+                  Individual / Team <small>({{red_singles_wins}} / {{red_doubles_wins}})</small></label>
                 {{> afFieldInput name='ro' placeholder="schemaLabel" class="input_autocomplete"}}
                 {{#if afFieldIsInvalid name='ro'}}
                 <span class="help-block">{{> afFieldMessage name='ro'}}</span>
@@ -139,10 +158,13 @@
               </div>
             </div>
 
-            <!-- Blue Team -->
+            <!-- Blue Team / Black Team -->
+            <!-- we switched to a new foosball table, which has yellow and black sides -->
             <div class="col-sm-6">
               <div class="form-group{{#if afFieldIsInvalid name='bo'}} has-error{{/if}}">
-                <label style="text-align:left; color:blue">Blue Individual / Team <small>({{blue_singles_wins}} / {{blue_doubles_wins}})</small></label>
+                <label style="text-align:left">
+                  <span style="color: blue">Blue</span> or <span style="color: black">Black</span> <br>
+                  Individual / Team <small>({{blue_singles_wins}} / {{blue_doubles_wins}})</small></label>
                 {{> afFieldInput name='bo' placeholder="schemaLabel" class="input_autocomplete"}}
                 {{#if afFieldIsInvalid name='bo'}}
                 <span class="help-block">{{> afFieldMessage name='bo'}}</span>
@@ -202,12 +224,11 @@
         <thead>
           <tr>
             <th data-type="numeric">Date/Time</th>
-            <th data-hide="phone">Red Off</th>
-            <th data-hide="phone">Red Def</th>
-            <th data-hide="phone">Blue Off</th>
-            <th data-hide="phone">Blue Def</th>
-            <th data-type="numeric">Red Score</th>
-            <th data-type="numeric">Blue Score</th>
+            <th data-sort-ignore="true" data-hide="phone">Off</th>
+            <th data-sort-ignore="true" data-hide="phone">Def</th>
+            <th data-sort-ignore="true" data-hide="phone">Off</th>
+            <th data-sort-ignore="true" data-hide="phone">Def</th>
+            <th data-sort-ignore="true" data-group="score-group" data-type="numeric" colspan="2">Score</th>
           </tr>
         </thead>
         <tbody>
@@ -218,8 +239,8 @@
               <td>{{findPlayerFromId rd_id}}</td>
               <td>{{findPlayerFromId bo_id}}</td>
               <td>{{findPlayerFromId bd_id}}</td>
-              <td>{{rs}}</td>
-              <td>{{bs}}</td>
+              <td data-group="score-group">{{rs}}</td>
+              <td data-group="score-group">{{bs}}</td>
             </tr>
           {{/each}}
         </tbody>
@@ -241,7 +262,10 @@
             <th data-type="numeric" data-hide="phone">Wins</th>
             <th data-type="numeric" data-hide="phone">Losses</th>
             <th data-type="numeric" data-hide="phone">Win %</th>
-            <th data-type="numeric" data-sort-initial="descending">Rating</th>
+            <th data-type="numeric" data-hide="phone">Singles</th>
+            <th data-type="numeric" data-hide="phone">Offense</th>
+            <th data-type="numeric" data-hide="phone">Defense</th>
+            <th data-type="numeric" data-sort-initial="descending">Combined</th>
           </tr>
           </thead>
           <tbody>
@@ -251,7 +275,10 @@
             <td>{{wins}}</td>
             <td>{{losses}}</td>
             <td>{{percent}}</td>
-            <td>{{rating}}</td>
+            <td>{{singles_rating}}</td>
+            <td>{{offense_rating}}</td>
+            <td>{{defense_rating}}</td>
+            <td>{{combined_rating}}</td>
           </tr>
           {{/each}}
           </tbody>
