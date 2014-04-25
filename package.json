@@ -1,0 +1,24 @@
+{
+  "name": "scorekeeper",
+  "version": "0.1.0",
+  "description": "a simple web interface for keeping track of scores and providing some statistical information for players/matches in foosball.",
+  "main": "Gruntfile.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/gui81/scorekeeper.git"
+  },
+  "author": "Lucas Johnson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gui81/scorekeeper/issues"
+  },
+  "homepage": "https://github.com/gui81/scorekeeper",
+  "devDependencies": {
+    "grunt": "^0.4.4",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-contrib-watch": "^0.6.1"
+  }
+}
