@@ -4,14 +4,14 @@ Router.configure({
   notFoundTemplate: 'notFound'
 });
 
-Router.map(function () {
+Router.map(function() {
   this.route('home', {
     path: '/',
     yieldTemplates: {
       'header': { to: 'header' },
       'sidebar': { to: 'sidebar' }
     },
-    waitOn: function () {
+    waitOn: function() {
       return [Meteor.subscribe('players'),
               Meteor.subscribe('combined_ratings'),
               Meteor.subscribe('singles_ratings'),
@@ -26,7 +26,7 @@ Router.map(function () {
       'header': { to: 'header' },
       'sidebar': { to: 'sidebar' }
     },
-    waitOn: function () {
+    waitOn: function() {
       return [Meteor.subscribe('matches'),
               Meteor.subscribe('players')];
     }
@@ -38,7 +38,7 @@ Router.map(function () {
       'header': { to: 'header' },
       'sidebar': { to: 'sidebar' }
     },
-    waitOn: function () {
+    waitOn: function() {
       return [Meteor.subscribe('players'),
               Meteor.subscribe('combined_ratings')];
     }
@@ -50,7 +50,7 @@ Router.map(function () {
       'header': { to: 'header' },
       'sidebar': { to: 'sidebar' }
     },
-    waitOn: function () {
+    waitOn: function() {
       return [Meteor.subscribe('matches'),
               Meteor.subscribe('players'),
               Meteor.subscribe('combined_ratings'),
@@ -66,7 +66,7 @@ Router.map(function () {
       'header': { to: 'header' },
       'sidebar': { to: 'sidebar' }
     },
-    waitOn: function () {
+    waitOn: function() {
       return [Meteor.subscribe('matches'),
               Meteor.subscribe('players')];
     }

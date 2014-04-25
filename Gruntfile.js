@@ -24,13 +24,31 @@ module.exports = function (grunt) {
       files: ['<%= jshint.files %>'],
       // tasks: ['jshint', 'qunit']
       tasks: ['jshint']
+    },
+    closureLint: {
+      app: {
+        closureLinterPath : '/usr/local/bin/',
+        command: 'gjslint',
+        src: [
+          'app/collections/*.js',
+          'app/lib/*.js',
+          'app/scorekeeper.js',
+          'app/tests/*.js'
+        ],
+        options: {
+          stdout: true,
+          strict: true
+        }
+      }
     }
   });
 
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-closure-linter');
 
   // grunt.registerTask('test', ['jshint', 'qunit']);
   grunt.registerTask('test', ['jshint']);
   grunt.registerTask('default', ['jshint']);
+  grunt.registerTask('gjslint', ['closureLint']);
 };
