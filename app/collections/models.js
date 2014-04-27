@@ -362,7 +362,7 @@ if (Meteor.isServer) {
       DefenseRatings.remove({});
 
       var INITIAL_RATING = 1250;
-      var players = Players.find({});
+      var players = Players.find({}, {sort: {date_time: 1}});
       players.forEach(function(player) {
         // add an initial rating for each rating being tracked
         CombinedRatings.insert({
@@ -390,7 +390,7 @@ if (Meteor.isServer) {
         });
       });
 
-      var matches = Matches.find({});
+      var matches = Matches.find({}, {sort: {date_time: 1}});
       matches.forEach(function(match) {
         var doc = ({
           ro: getPlayerName(match.ro_id),
