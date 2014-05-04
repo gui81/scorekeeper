@@ -5,9 +5,10 @@ module.exports = function (grunt) {
     jshint: {
       files: [
         'Gruntfile.js',
+        'app/client/*.js',
         'app/collections/*.js',
         'app/lib/*.js',
-        'app/scorekeeper.js',
+        'app/server/*.js',
         'app/tests/*.js'
       ],
       options: {
@@ -30,9 +31,10 @@ module.exports = function (grunt) {
         closureLinterPath : '/usr/local/bin/',
         command: 'gjslint',
         src: [
+          'app/client/*.js',
           'app/collections/*.js',
           'app/lib/*.js',
-          'app/scorekeeper.js',
+          'app/sever/*.js',
           'app/tests/*.js'
         ],
         options: {
