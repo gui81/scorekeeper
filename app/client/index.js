@@ -1,22 +1,45 @@
-// SimpleSchema.debug = true;
 /** options for the spinner package */
 Meteor.Spinner.options = {
-  lines: 13, // The number of lines to draw
-  length: 5, // The length of each line
-  width: 2, // The line thickness
-  radius: 8, // The radius of the inner circle
-  corners: 0.7, // Corner roundness (0..1)
-  rotate: 0, // The rotation offset
-  direction: 1, // 1: clockwise, -1: counterclockwise
-  color: '#fff', // #rgb or #rrggbb
-  speed: 1, // Rounds per second
-  trail: 60, // Afterglow percentage
-  shadow: true, // Whether to render a shadow
-  hwaccel: false, // Whether to use hardware acceleration
-  className: 'spinner', // The CSS class to assign to the spinner
-  zIndex: 2e9, // The z-index (defaults to 2000000000)
-  top: '20px', // Top position relative to parent in px
-  left: 'auto' // Left position relative to parent in px
+  // The number of lines to draw
+  lines: 13,
+  // The length of each line
+  length: 5,
+  // The line thickness
+  width: 2,
+  // The radius of the inner circle
+  radius: 8,
+  // Corner roundness (0..1)
+  corners: 0.7,
+  // The rotation offset
+  rotate: 0,
+  // 1: clockwise, -1: counterclockwise
+  direction: 1,
+  // #rgb or #rrggbb
+  color: '#fff',
+  // revolutions per second
+  speed: 1,
+  // Afterglow percentage
+  trail: 60,
+  // Whether to render a shadow
+  shadow: true,
+  // Whether to use hardware acceleration
+  hwaccel: false,
+  // The CSS class to assign to the spinner
+  className: 'spinner',
+  // The z-index (defaults to 2000000000)
+  zIndex: 2e9,
+  // Top position relative to parent in px
+  top: '20px',
+  // Left position relative to parent in px
+  left: 'auto'
+};
+
+var pad = function(num, size) {
+  var s = num + '';
+  while (s.length < size) {
+    s = '0' + s;
+  }
+  return s;
 };
 
 Handlebars.registerHelper('formatDate', function(datetime) {
@@ -34,7 +57,7 @@ Handlebars.registerHelper('formatDate', function(datetime) {
 
 Handlebars.registerHelper('findPlayerFromId', function(player_id) {
   var player = Players.findOne({_id: player_id});
-  if (typeof player != 'undefined') {
+  if (typeof player !== 'undefined') {
     return player.name;
   } else {
     return 'N/A';
@@ -45,7 +68,7 @@ Handlebars.registerHelper('findPlayerFirstEloRatingFromId',
                           function(player_id) {
   var elo_rating = CombinedRatings.findOne({player_id: player_id},
                                            {sort: {date_time: 1}});
-  if (typeof elo_rating != 'undefined') {
+  if (typeof elo_rating !== 'undefined') {
     return elo_rating.rating;
   } else {
     return 'N/A';
@@ -67,29 +90,21 @@ Template.player_form.helpers({
 var findPlayerLatestEloRatingFromId = function(player_id, collection) {
   var elo_rating = collection.findOne({player_id: player_id},
                                       {sort: {date_time: -1}});
-  if (typeof elo_rating != 'undefined') {
+  if (typeof elo_rating !== 'undefined') {
     return +elo_rating.rating.toFixed(0);
   } else {
     return 'N/A';
   }
 };
 
-var pad = function(num, size) {
-  var s = num + '';
-  while (s.length < size) {
-    s = '0' + s;
-  }
-  return s;
-};
-
 var addIndPlayersArray = function(players, id, win, loss) {
-  if (typeof players[id] != 'undefined') {
+  if (typeof players[id] !== 'undefined') {
     players[id] = ({
       wins: players[id].wins + win,
       losses: players[id].losses + loss
     });
   } else {
-    if ((typeof id != 'undefined') && (id)) {
+    if ((typeof id !== 'undefined') && (id)) {
       players[id] = ({
         wins: win,
         losses: loss
@@ -99,16 +114,16 @@ var addIndPlayersArray = function(players, id, win, loss) {
 };
 
 var addTeamPlayersArray = function(players, o_id, d_id, win, loss) {
-  if ((typeof players[o_id] != 'undefined') &&
-      (typeof players[o_id][d_id] != 'undefined')) {
+  if ((typeof players[o_id] !== 'undefined') &&
+      (typeof players[o_id][d_id] !== 'undefined')) {
     players[o_id][d_id] = ({
       wins: players[o_id][d_id].wins + win,
       losses: players[o_id][d_id].losses + loss
     });
   } else {
-    if ((typeof o_id != 'undefined') &&
-        (typeof d_id != 'undefined') && (o_id) && (d_id)) {
-      if (typeof players[o_id] == 'undefined') {
+    if ((typeof o_id !== 'undefined') &&
+        (typeof d_id !== 'undefined') && (o_id) && (d_id)) {
+      if (typeof players[o_id] === 'undefined') {
         players[o_id] = [];
       }
       players[o_id][d_id] = ({
@@ -124,34 +139,44 @@ var addGraph = function(collection, chart_dom) {
   // Pick and choose which chart features you want to utilize.
   nv.addGraph(function() {
     var chart = nv.models.lineChart()
-            .margin({left: 75, right: 30})  // Adjust chart margins to give
-                                            //   the axes some breathing room
-            .useInteractiveGuideline(true)  // We want nice looking tooltips
-                                            //   and a guideline
-            .transitionDuration(350)  //how fast to transition lines
-            .showLegend(true)       //Show legend, allow users toggle lines
-            .showYAxis(true)        //Show y-axis
-            .showXAxis(true);       //Show x-axis
+            // Adjust chart margins to give the axes some breathing room
+            .margin({left: 75, right: 30})
+            // We want nice looking tooltips and a guideline
+            .useInteractiveGuideline(true)
+            //how fast to transition lines
+            .transitionDuration(350)
+            //Show legend, allow users toggle lines
+            .showLegend(true)
+            //Show y-axis
+            .showYAxis(true)
+            //Show x-axis
+            .showXAxis(true);
 
-    chart.xAxis     //Chart x-axis settings
-     // .axisLabel('Date/Time')
+    // Chart x-axis settings
+    chart.xAxis
         .tickFormat(function(d) {
           return d3.time.format('%x')(new Date(d));
         });
 
-    chart.yAxis     //Chart y-axis settings
+    // Chart y-axis settings
+    chart.yAxis
         .axisLabel('Rating (Elo)')
         .tickFormat(d3.format('.0f'));
 
-    /* Done setting the chart up? Time to render it!*/
+    // Done setting the chart up? Time to render it!
     var myData = getChartData(collection);
 
-    d3.select(chart_dom)  //Select the <svg> element to render the chart in
-        .datum(myData)    //Populate the <svg> element with chart data...
-        .call(chart);     //Finally, render the chart!
+    // Select the <svg> element to render the chart in
+    d3.select(chart_dom)
+        // Populate the <svg> element with chart data...
+        .datum(myData)
+        // Finally, render the chart!
+        .call(chart);
 
-    //Update the chart when window resizes.
-    nv.utils.windowResize(function() { chart.update(); });
+    // Update the chart when window resizes.
+    nv.utils.windowResize(function() {
+      chart.update();
+    });
     return chart;
   });
 
@@ -167,7 +192,7 @@ var addGraph = function(collection, chart_dom) {
                                       {sort: {date_time: -1}});
       if (rating) {
         player_ratings.push({player_id: player._id, player_name: player.name,
-                             rating: rating.rating});
+                         rating: rating.rating});
       }
     });
 
@@ -198,15 +223,18 @@ var addGraph = function(collection, chart_dom) {
 var printObjectProperties = function(obj) {
   console.log('object:');
   for (var param in obj) {
-    console.log('  ' + param + ' = ' + obj[param]);
+    if (object.hasOwnProperty(param)) {
+      console.log('  ' + param + ' = ' + obj[param]);
+    }
   }
 };
 
 Template.header.events({
-  'click #menu-toggle': function(evt, tmpl) {
+  'click #menu-toggle': function() {
     $('#wrapper').toggleClass('active');
   }
 });
+
 
 /** after home template is rendered */
 Template.home.rendered = function() {
@@ -216,25 +244,30 @@ Template.home.rendered = function() {
   addGraph(DefenseRatings, '#defense_chart svg');
 };
 
-/** after individual_stats template is rendered */
+
+/**  after individual_stats template is rendered */
 Template.individual_stats.rendered = function() {
   $('.footable').footable();
 };
+
 
 /** after team_stats template is rendered */
 Template.team_stats.rendered = function() {
   $('.footable').footable();
 };
 
+
 /** after last_10_matches template is rendered */
 Template.last_10_matches.rendered = function() {
   $('.footable').footable();
 };
 
+
 /** after last_10_players template is rendered */
 Template.last_10_players.rendered = function() {
   $('.footable').footable();
 };
+
 
 /** after game_form template is rendered */
 Template.game_form.rendered = function() {
@@ -255,7 +288,7 @@ Template.game_form.helpers({
     var wins = 0;
     matches.forEach(function(match) {
       if ((match.ro_id) && (!match.rd_id) &&
-          (parseInt(match.rs) > parseInt(match.bs))) {
+          (parseInt(match.rs, 10) > parseInt(match.bs, 10))) {
         wins += 1;
       }
     });
@@ -268,7 +301,7 @@ Template.game_form.helpers({
     var wins = 0;
     matches.forEach(function(match) {
       if ((match.ro_id) && (match.rd_id) &&
-          (parseInt(match.rs) > parseInt(match.bs))) {
+          (parseInt(match.rs, 10) > parseInt(match.bs, 10))) {
         wins += 1;
       }
     });
@@ -281,7 +314,7 @@ Template.game_form.helpers({
     var wins = 0;
     matches.forEach(function(match) {
       if ((match.bo_id) && (!match.bd_id) &&
-          (parseInt(match.bs) > parseInt(match.rs))) {
+          (parseInt(match.bs, 10) > parseInt(match.rs, 10))) {
         wins += 1;
       }
     });
@@ -294,7 +327,7 @@ Template.game_form.helpers({
     var wins = 0;
     matches.forEach(function(match) {
       if ((match.bo_id) && (match.bd_id) &&
-          (parseInt(match.bs) > parseInt(match.rs))) {
+          (parseInt(match.bs, 10) > parseInt(match.rs, 10))) {
         wins += 1;
       }
     });
@@ -311,10 +344,6 @@ Template.last_10_matches.helpers({
 
 Template.last_10_players.helpers({
   players: function() {
-    // var players = Players.find({}, {sort: {date_time: -1}, limit: 10});
-    // players.forEach(function(player) {
-    // printObjectProperties(player);
-    // });
     return Players.find({}, {sort: {date_time: -1}, limit: 10});
   }
 });
@@ -327,7 +356,7 @@ Template.individual_stats.helpers({
     cursor.forEach(function(match) {
       var red_win = 0;
       var blue_win = 0;
-      if (parseInt(match.rs) > parseInt(match.bs)) {
+      if (parseInt(match.rs, 10) > parseInt(match.bs, 10)) {
         red_win = 1;
       } else {
         blue_win = 1;
@@ -342,25 +371,26 @@ Template.individual_stats.helpers({
     // now create a list that can be used for display
     var p = [];
     for (var id in players) {
-      var per = (players[id].wins /
-        (players[id].wins + players[id].losses));
-      if (typeof id != 'undefined') {
-        var player = Players.findOne({_id: id});
-        // console.log("player = " + JSON.stringify(player, null, 4));
-        p.push({
-          name: player.name,
-          wins: players[id].wins,
-          losses: players[id].losses,
-          percent: +(per * 100).toFixed(0) + '%',
-          combined_rating: findPlayerLatestEloRatingFromId(id,
-                                                           CombinedRatings),
-          singles_rating: findPlayerLatestEloRatingFromId(id,
-                                                          SinglesRatings),
-          offense_rating: findPlayerLatestEloRatingFromId(id,
-                                                          OffenseRatings),
-          defense_rating: findPlayerLatestEloRatingFromId(id,
-                                                          DefenseRatings)
-        });
+      if (players.hasOwnProperty(id)) {
+        var per = (players[id].wins /
+          (players[id].wins + players[id].losses));
+        if (typeof id !== 'undefined') {
+          var player = Players.findOne({_id: id});
+          p.push({
+            name: player.name,
+            wins: players[id].wins,
+            losses: players[id].losses,
+            percent: +(per * 100).toFixed(0) + '%',
+            combined_rating: findPlayerLatestEloRatingFromId(id,
+                                                             CombinedRatings),
+            singles_rating: findPlayerLatestEloRatingFromId(id,
+                                                            SinglesRatings),
+            offense_rating: findPlayerLatestEloRatingFromId(id,
+                                                            OffenseRatings),
+            defense_rating: findPlayerLatestEloRatingFromId(id,
+                                                            DefenseRatings)
+          });
+        }
       }
     }
 
@@ -377,7 +407,7 @@ Template.team_stats.helpers({
     cursor.forEach(function(match) {
       var red_win = 0;
       var blue_win = 0;
-      if (parseInt(match.rs) > parseInt(match.bs)) {
+      if (parseInt(match.rs, 10) > parseInt(match.bs, 10)) {
         red_win = 1;
       } else {
         blue_win = 1;
@@ -391,7 +421,13 @@ Template.team_stats.helpers({
 
     var teams = [];
     for (var o_id in players) {
+      if (!players.hasOwnProperty(o_id)) {
+        continue;
+      }
       for (var d_id in players[o_id]) {
+        if (!players[o_id].hasOwnProperty(d_id)) {
+          continue;
+        }
         var per = (players[o_id][d_id].wins /
           (players[o_id][d_id].wins + players[o_id][d_id].losses));
         var o_player = Players.findOne({_id: o_id});

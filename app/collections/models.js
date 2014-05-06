@@ -2,15 +2,19 @@
 // against schema to ensure data integrity
 Matches = new Meteor.Collection('matches');
 Players = new Meteor.Collection('players');
-CombinedRatings = new Meteor.Collection('combined_ratings');  // all counted
-SinglesRatings = new Meteor.Collection('singles_ratings');  // just singles
-OffenseRatings = new Meteor.Collection('offense_ratings');  // doubles offense
-DefenseRatings = new Meteor.Collection('defense_ratings');  // doubles defense
+// all games are counted in the CombinedRatings
+CombinedRatings = new Meteor.Collection('combined_ratings');
+// just singles ratings
+SinglesRatings = new Meteor.Collection('singles_ratings');
+// doubles offense
+OffenseRatings = new Meteor.Collection('offense_ratings');
+// doubles defense
+DefenseRatings = new Meteor.Collection('defense_ratings');
 
 var playerNames = function() {
   // if the value does not exist, then let's just return so that the optional
   // fields are handled correctly
-  if (this.value == 'undefined' || !this.value) {
+  if (!this.value) {
     return;
   }
   // now try to find the player in our Collection
@@ -114,6 +118,13 @@ if (Meteor.isServer) {
   var K_RATING_COEFFICIENT = 50;
   var F_RATING_INTERVAL_SCALE_WEIGHT = 1000;
 
+  var winExpectancy = function(rating, opponent_rating) {
+    var We = 1 / (
+        Math.pow(10, (-(rating - opponent_rating) /
+                      F_RATING_INTERVAL_SCALE_WEIGHT)) + 1);
+    return We;
+  };
+
   var updateRating = function(date, player_id, rating, opponent_rating,
                               rating_to_adjust, win, collection) {
     var S = (win ? 1 : 0);
@@ -127,13 +138,6 @@ if (Meteor.isServer) {
     });
 
     return Rn;
-  };
-
-  var winExpectancy = function(rating, opponent_rating) {
-    var We = 1 / (
-        Math.pow(10, (-(rating - opponent_rating) /
-                      F_RATING_INTERVAL_SCALE_WEIGHT)) + 1);
-    return We;
   };
 
   /**
@@ -203,156 +207,250 @@ if (Meteor.isServer) {
     }
   };
 
-  Meteor.startup(function() {
-    var updateAllRatings = function(doc, date) {
-      var ro_id, rd_id, bo_id, bd_id;
-      var last_ro_combined_rating, last_rd_combined_rating,
-          last_bo_combined_rating, last_bd_combined_rating;
-      var last_ro_singles_rating, last_bo_singles_rating;
-      var last_ro_offense_rating, last_bo_offense_rating;
-      var last_rd_defense_rating, last_bd_defense_rating;
-      if (typeof doc.ro != 'undefined') {
-        ro_id = getPlayerId(doc.ro);
-        last_ro_combined_rating = CombinedRatings.findOne(
-            {player_id: ro_id}, {sort: {date_time: -1}});
-        last_ro_singles_rating = SinglesRatings.findOne(
-            {player_id: ro_id}, {sort: {date_time: -1}});
-        last_ro_offense_rating = OffenseRatings.findOne(
-            {player_id: ro_id}, {sort: {date_time: -1}});
-      }
-      if (typeof doc.rd != 'undefined') {
-        rd_id = getPlayerId(doc.rd);
-        last_rd_combined_rating = CombinedRatings.findOne(
-            {player_id: rd_id}, {sort: {date_time: -1}});
-        last_rd_defense_rating = DefenseRatings.findOne(
-            {player_id: rd_id}, {sort: {date_time: -1}});
-      }
-      if (typeof doc.bo != 'undefined') {
-        bo_id = getPlayerId(doc.bo);
-        last_bo_combined_rating = CombinedRatings.findOne(
-            {player_id: bo_id}, {sort: {date_time: -1}});
-        last_bo_singles_rating = SinglesRatings.findOne(
-            {player_id: bo_id}, {sort: {date_time: -1}});
-        last_bo_offense_rating = OffenseRatings.findOne(
-            {player_id: bo_id}, {sort: {date_time: -1}});
-      }
-      if (typeof doc.bd != 'undefined') {
-        bd_id = getPlayerId(doc.bd);
-        last_bd_combined_rating = CombinedRatings.findOne(
-            {player_id: bd_id}, {sort: {date_time: -1}});
-        last_bd_defense_rating = DefenseRatings.findOne(
-            {player_id: bd_id}, {sort: {date_time: -1}});
-      }
+  var update2v2Ratings = function(ratingValues) {
+    var red_rating = (ratingValues.last_ro_combined_rating.rating +
+                      ratingValues.last_rd_combined_rating.rating) / 2.0;
+    var blue_rating = (ratingValues.last_bo_combined_rating.rating +
+                       ratingValues.last_bd_combined_rating.rating) / 2.0;
 
-      var red_won;
-      if (parseInt(doc.rs) > parseInt(doc.bs)) {
-        red_won = true;
-      } else {
-        red_won = false;
-      }
+    // update combined ratings
+    updateRating(ratingValues.date, ratingValues.ro_id,
+                 red_rating, blue_rating,
+                 ratingValues.last_ro_combined_rating.rating,
+                 ratingValues.red_won, CombinedRatings);
+    updateRating(ratingValues.date, ratingValues.rd_id,
+                 red_rating, blue_rating,
+                 ratingValues.last_rd_combined_rating.rating,
+                 ratingValues.red_won, CombinedRatings);
+    updateRating(ratingValues.date, ratingValues.bo_id,
+                 blue_rating, red_rating,
+                 ratingValues.last_bo_combined_rating.rating,
+                 !ratingValues.red_won, CombinedRatings);
+    updateRating(ratingValues.date, ratingValues.bd_id,
+                 blue_rating, red_rating,
+                 ratingValues.last_bd_combined_rating.rating,
+                 !ratingValues.red_won, CombinedRatings);
 
-      if ((typeof doc.rd != 'undefined') &&
-          (typeof doc.bd != 'undefined')) {
-        // 2 v 2
-        var red_rating = (last_ro_combined_rating.rating +
-                          last_rd_combined_rating.rating) / 2.0;
-        var blue_rating = (last_bo_combined_rating.rating +
-                           last_bd_combined_rating.rating) / 2.0;
+    // update doubles ratings, distinguishing between offense and defense
+    updateRating(ratingValues.date, ratingValues.ro_id,
+                 red_rating, blue_rating,
+                 ratingValues.last_ro_offense_rating.rating,
+                 ratingValues.red_won, OffenseRatings);
+    updateRating(ratingValues.date, ratingValues.rd_id,
+                 red_rating, blue_rating,
+                 ratingValues.last_rd_defense_rating.rating,
+                 ratingValues.red_won, DefenseRatings);
+    updateRating(ratingValues.date, ratingValues.bo_id,
+                 blue_rating, red_rating,
+                 ratingValues.last_bo_offense_rating.rating,
+                 !ratingValues.red_won, OffenseRatings);
+    updateRating(ratingValues.date, ratingValues.bd_id,
+                 blue_rating, red_rating,
+                 ratingValues.last_bd_defense_rating.rating,
+                 !ratingValues.red_won, DefenseRatings);
+  };
 
-        // update combined ratings
-        updateRating(date, ro_id, red_rating, blue_rating,
-                     last_ro_combined_rating.rating, red_won, CombinedRatings);
-        updateRating(date, rd_id, red_rating, blue_rating,
-                     last_rd_combined_rating.rating, red_won, CombinedRatings);
-        updateRating(date, bo_id, blue_rating, red_rating,
-                     last_bo_combined_rating.rating, !red_won, CombinedRatings);
-        updateRating(date, bd_id, blue_rating, red_rating,
-                     last_bd_combined_rating.rating, !red_won, CombinedRatings);
+  var update1v1Ratings = function(ratingValues) {
+    // update combined ratings
+    updateRating(ratingValues.date, ratingValues.ro_id,
+                 ratingValues.last_ro_combined_rating.rating,
+                 ratingValues.last_bo_combined_rating.rating,
+                 ratingValues.last_ro_combined_rating.rating,
+                 ratingValues.red_won, CombinedRatings);
+    updateRating(ratingValues.date, ratingValues.bo_id,
+                 ratingValues.last_bo_combined_rating.rating,
+                 ratingValues.last_ro_combined_rating.rating,
+                 ratingValues.last_bo_combined_rating.rating,
+                 !ratingValues.red_won, CombinedRatings);
 
-        // update doubles ratings, distinguishing between offense and defense
-        updateRating(date, ro_id, red_rating, blue_rating,
-                     last_ro_offense_rating.rating, red_won, OffenseRatings);
-        updateRating(date, rd_id, red_rating, blue_rating,
-                     last_rd_defense_rating.rating, red_won, DefenseRatings);
-        updateRating(date, bo_id, blue_rating, red_rating,
-                     last_bo_offense_rating.rating, !red_won, OffenseRatings);
-        updateRating(date, bd_id, blue_rating, red_rating,
-                     last_bd_defense_rating.rating, !red_won, DefenseRatings);
-      } else if ((typeof doc.rd == 'undefined') &&
-          (typeof doc.bd == 'undefined')) {
-        // 1 v 1
-        // update combined ratings
-        updateRating(date, ro_id, last_ro_combined_rating.rating,
-                     last_bo_combined_rating.rating,
-                     last_ro_combined_rating.rating, red_won, CombinedRatings);
-        updateRating(date, bo_id, last_bo_combined_rating.rating,
-                     last_ro_combined_rating.rating,
-                     last_bo_combined_rating.rating, !red_won, CombinedRatings);
+    // update singles ratings
+    updateRating(ratingValues.date, ratingValues.ro_id,
+                 ratingValues.last_ro_singles_rating.rating,
+                 ratingValues.last_bo_singles_rating.rating,
+                 ratingValues.last_ro_singles_rating.rating,
+                 ratingValues.red_won, SinglesRatings);
+    updateRating(ratingValues.date, ratingValues.bo_id,
+                 ratingValues.last_bo_singles_rating.rating,
+                 ratingValues.last_ro_singles_rating.rating,
+                 ratingValues.last_bo_singles_rating.rating,
+                 !ratingValues.red_won, SinglesRatings);
+  };
 
-        // update singles ratings
-        updateRating(date, ro_id, last_ro_singles_rating.rating,
-                     last_bo_singles_rating.rating,
-                     last_ro_singles_rating.rating, red_won, SinglesRatings);
-        updateRating(date, bo_id, last_bo_singles_rating.rating,
-                     last_ro_singles_rating.rating,
-                     last_bo_singles_rating.rating, !red_won, SinglesRatings);
-      } else {
-        // this is where I give more value to the single player, by not dividing
-        // the team rating by 2, but instead by 1.5, since they are expected to
-        // win
-        if (typeof doc.rd != 'undefined') {
-          // 2 red v 1 blue
-          // update combined ratings
-          var red_rating2 = (last_ro_combined_rating.rating +
-                             last_rd_combined_rating.rating) / 1.5;
-          updateRating(date, ro_id, red_rating2, last_bo_combined_rating.rating,
-                       last_ro_combined_rating.rating, red_won,
-                       CombinedRatings);
-          updateRating(date, rd_id, red_rating2, last_bo_combined_rating.rating,
-                       last_rd_combined_rating.rating, red_won,
-                       CombinedRatings);
-          updateRating(date, bo_id, last_bo_combined_rating.rating, red_rating2,
-                       last_bo_combined_rating.rating, !red_won,
-                       CombinedRatings);
+  var update2v1Ratings = function(ratingValues) {
+    // this is where I give more value to the single player, by not dividing
+    // the team rating by 2, but instead by 1.5, since they are expected to
+    // win
+    if (typeof doc.rd !== 'undefined') {
+      // 2 red v 1 blue
+      // update combined ratings
+      var red_rating2 = (ratingValues.last_ro_combined_rating.rating +
+                         ratingValues.last_rd_combined_rating.rating) / 1.5;
+      updateRating(ratingValues.date, ratingValues.ro_id,
+                   red_rating2,
+                   ratingValues.last_bo_combined_rating.rating,
+                   ratingValues.last_ro_combined_rating.rating,
+                   ratingValues.red_won,
+                   CombinedRatings);
+      updateRating(ratingValues.date, ratingValues.rd_id,
+                   red_rating2,
+                   ratingValues.last_bo_combined_rating.rating,
+                   ratingValues.last_rd_combined_rating.rating,
+                   ratingValues.red_won,
+                   CombinedRatings);
+      updateRating(ratingValues.date, ratingValues.bo_id,
+                   ratingValues.last_bo_combined_rating.rating,
+                   red_rating2,
+                   ratingValues.last_bo_combined_rating.rating,
+                   !ratingValues.red_won,
+                   CombinedRatings);
 
-          // update doubles ratings
-          updateRating(date, ro_id, red_rating2, last_bo_singles_rating.rating,
-                       last_ro_offense_rating.rating, red_won, OffenseRatings);
-          updateRating(date, rd_id, red_rating2, last_bo_singles_rating.rating,
-                       last_rd_defense_rating.rating, red_won, DefenseRatings);
+      // update doubles ratings
+      updateRating(ratingValues.date, ratingValues.ro_id,
+                   red_rating2,
+                   ratingValues.last_bo_singles_rating.rating,
+                   ratingValues.last_ro_offense_rating.rating,
+                   ratingValues.red_won,
+                   OffenseRatings);
+      updateRating(ratingValues.date, ratingValues.rd_id,
+                   red_rating2,
+                   ratingValues.last_bo_singles_rating.rating,
+                   ratingValues.last_rd_defense_rating.rating,
+                   ratingValues.red_won,
+                   DefenseRatings);
 
-          // update singles ratings
-          updateRating(date, bo_id, last_bo_singles_rating.rating, red_rating2,
-                       last_bo_singles_rating.rating, !red_won, SinglesRatings);
-        } else {
-          // 1 red v 2 blue
-          var blue_rating2 = (last_bo_combined_rating.rating +
-                              last_bd_combined_rating.rating) / 1.5;
-          updateRating(date, ro_id, last_ro_combined_rating.rating,
-                       blue_rating2, last_ro_combined_rating.rating, red_won,
-                       CombinedRatings);
-          updateRating(date, bo_id, blue_rating2,
-                       last_ro_combined_rating.rating,
-                       last_bo_combined_rating.rating, !red_won,
-                       CombinedRatings);
-          updateRating(date, bd_id, blue_rating2,
-                       last_ro_combined_rating.rating,
-                       last_bd_combined_rating.rating, !red_won,
-                       CombinedRatings);
+      // update singles ratings
+      updateRating(ratingValues.date, ratingValues.bo_id,
+                   ratingValues.last_bo_singles_rating.rating,
+                   red_rating2,
+                   ratingValues.last_bo_singles_rating.rating,
+                   !ratingValues.red_won,
+                   SinglesRatings);
+    } else {
+      // 1 red v 2 blue
+      var blue_rating2 = (ratingValues.last_bo_combined_rating.rating +
+                          ratingValues.last_bd_combined_rating.rating) / 1.5;
+      updateRating(ratingValues.date, ratingValues.ro_id,
+                   ratingValues.last_ro_combined_rating.rating,
+                   blue_rating2,
+                   ratingValues.last_ro_combined_rating.rating,
+                   ratingValues.red_won,
+                   CombinedRatings);
+      updateRating(ratingValues.date, ratingValues.bo_id,
+                   blue_rating2,
+                   ratingValues.last_ro_combined_rating.rating,
+                   ratingValues.last_bo_combined_rating.rating,
+                   !ratingValues.red_won,
+                   CombinedRatings);
+      updateRating(ratingValues.date, ratingValues.bd_id,
+                   blue_rating2,
+                   ratingValues.last_ro_combined_rating.rating,
+                   last_bd_combined_rating.rating, !red_won,
+                   CombinedRatings);
 
-          // update singles ratings
-          updateRating(date, ro_id, last_ro_singles_rating.rating, blue_rating2,
-                       last_ro_singles_rating.rating, red_won, SinglesRatings);
+      // update singles ratings
+      updateRating(ratingValues.date, ratingValues.ro_id,
+                   ratingValues.last_ro_singles_rating.rating,
+                   blue_rating2,
+                   ratingValues.last_ro_singles_rating.rating,
+                   ratingValues.red_won,
+                   SinglesRatings);
 
-          // update doubles ratings
-          updateRating(date, bo_id, blue_rating2, last_ro_singles_rating.rating,
-                       last_bo_offense_rating.rating, !red_won, OffenseRatings);
-          updateRating(date, bd_id, blue_rating2, last_ro_singles_rating.rating,
-                       last_bd_defense_rating.rating, !red_won, DefenseRatings);
-        }
-      }
+      // update doubles ratings
+      updateRating(ratingValues.date, ratingValues.bo_id,
+                   blue_rating2,
+                   ratingValues.last_ro_singles_rating.rating,
+                   ratingValues.last_bo_offense_rating.rating,
+                   !ratingValues.red_won,
+                   OffenseRatings);
+      updateRating(ratingValues.date, ratingValues.bd_id,
+                   blue_rating2,
+                   ratingValues.last_ro_singles_rating.rating,
+                   ratingValues.last_bd_defense_rating.rating,
+                   !ratingValues.red_won,
+                   DefenseRatings);
+    }
+  };
+
+  var updateAllRatings = function(doc, date) {
+    var ro_id, rd_id, bo_id, bd_id;
+    var last_ro_combined_rating, last_rd_combined_rating,
+        last_bo_combined_rating, last_bd_combined_rating;
+    var last_ro_singles_rating, last_bo_singles_rating;
+    var last_ro_offense_rating, last_bo_offense_rating;
+    var last_rd_defense_rating, last_bd_defense_rating;
+    if (typeof doc.ro !== 'undefined') {
+      ro_id = getPlayerId(doc.ro);
+      last_ro_combined_rating = CombinedRatings.findOne(
+          {player_id: ro_id}, {sort: {date_time: -1}});
+      last_ro_singles_rating = SinglesRatings.findOne(
+          {player_id: ro_id}, {sort: {date_time: -1}});
+      last_ro_offense_rating = OffenseRatings.findOne(
+          {player_id: ro_id}, {sort: {date_time: -1}});
+    }
+    if (typeof doc.rd !== 'undefined') {
+      rd_id = getPlayerId(doc.rd);
+      last_rd_combined_rating = CombinedRatings.findOne(
+          {player_id: rd_id}, {sort: {date_time: -1}});
+      last_rd_defense_rating = DefenseRatings.findOne(
+          {player_id: rd_id}, {sort: {date_time: -1}});
+    }
+    if (typeof doc.bo !== 'undefined') {
+      bo_id = getPlayerId(doc.bo);
+      last_bo_combined_rating = CombinedRatings.findOne(
+          {player_id: bo_id}, {sort: {date_time: -1}});
+      last_bo_singles_rating = SinglesRatings.findOne(
+          {player_id: bo_id}, {sort: {date_time: -1}});
+      last_bo_offense_rating = OffenseRatings.findOne(
+          {player_id: bo_id}, {sort: {date_time: -1}});
+    }
+    if (typeof doc.bd !== 'undefined') {
+      bd_id = getPlayerId(doc.bd);
+      last_bd_combined_rating = CombinedRatings.findOne(
+          {player_id: bd_id}, {sort: {date_time: -1}});
+      last_bd_defense_rating = DefenseRatings.findOne(
+          {player_id: bd_id}, {sort: {date_time: -1}});
+    }
+
+    var red_won;
+    if (parseInt(doc.rs) > parseInt(doc.bs)) {
+      red_won = true;
+    } else {
+      red_won = false;
+    }
+
+    var ratingValues = {
+      date: date,
+      ro_id: ro_id,
+      rd_id: rd_id,
+      bo_id: bo_id,
+      bd_id: bd_id,
+      red_won: red_won,
+      last_ro_combined_rating: last_ro_combined_rating,
+      last_rd_combined_rating: last_rd_combined_rating,
+      last_bo_combined_rating: last_bo_combined_rating,
+      last_bd_combined_rating: last_bd_combined_rating,
+      last_ro_offense_rating: last_ro_offense_rating,
+      last_rd_defense_rating: last_rd_defense_rating,
+      last_bo_offense_rating: last_bo_offense_rating,
+      last_bd_defense_rating: last_bd_defense_rating,
+      last_ro_singles_rating: last_ro_singles_rating,
+      last_bo_singles_rating: last_bo_singles_rating
     };
+    if ((typeof doc.rd !== 'undefined') &&
+        (typeof doc.bd !== 'undefined')) {
+      // 2 v 2
+      update2v2Ratings(ratingValues);
+    } else if ((typeof doc.rd === 'undefined') &&
+        (typeof doc.bd === 'undefined')) {
+      // 1 v 1
+      update1v1Ratings(ratingValues);
+    } else {
+      // 2 v 1
+      update2v1Ratings(ratingValues);
+    }
+  };
 
+  Meteor.startup(function() {
     if (Meteor.settings.recalculate_ratings === 'true') {
       console.log('recalculating ratings');
 
@@ -406,16 +504,16 @@ if (Meteor.isServer) {
 
     var insertMatch = function(doc) {
       var ro_id, rd_id, bo_id, bd_id;
-      if (typeof doc.ro != 'undefined') {
+      if (typeof doc.ro !== 'undefined') {
         ro_id = getPlayerId(doc.ro);
       }
-      if (typeof doc.rd != 'undefined') {
+      if (typeof doc.rd !== 'undefined') {
         rd_id = getPlayerId(doc.rd);
       }
-      if (typeof doc.bo != 'undefined') {
+      if (typeof doc.bo !== 'undefined') {
         bo_id = getPlayerId(doc.bo);
       }
-      if (typeof doc.bd != 'undefined') {
+      if (typeof doc.bd !== 'undefined') {
         bd_id = getPlayerId(doc.bd);
       }
 
