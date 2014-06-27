@@ -13,6 +13,7 @@
     "spin": {},
     "jqueryui": {},
     "footable": {},
-    "nvd3js": {}
+    "nvd3js": {},
+    "subs-manager": {}
   }
 }

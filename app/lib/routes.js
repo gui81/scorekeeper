@@ -1,22 +1,18 @@
-// something is not working anymore with respect to the loadingTemplate
-// and the waitOn hook, there is a lot of discussion about this here:
+var subs = new SubsManager();
+
+// something changed in iron-router when it moved from 0.6 to 0.7 that impacted
+// the way waitOn works.  It seems that adding the action section with
+// this.ready and this.render does the trick that waitOn alone did in the past
+// to make sure the data for each subscription is passed to the client before
+// the template gets rendered.  The comment from maxhilland on May 18 near the
+// bottom of the following link helped me find the solution:
 // https://github.com/EventedMind/iron-router/issues/265
-// functionality changed after Meteor 0.8/iron-router 0.7
-// waitOn should not go in the global configure since you shouldn't wait
-// on all of the subscriptions for every route, but it is here for now
-// to try to figure out what is going on
+// However, based on my testing, it doesn't seem like the data section is
+// necessary
 Router.configure({
   layoutTemplate: 'layout',
   loadingTemplate: 'loading',
-  notFoundTemplate: 'notFound',
-  waitOn: function() {
-    return [Meteor.subscribe('players'),
-            Meteor.subscribe('matches'),
-            Meteor.subscribe('combined_ratings'),
-            Meteor.subscribe('singles_ratings'),
-            Meteor.subscribe('offense_ratings'),
-            Meteor.subscribe('defense_ratings')];
-  }
+  notFoundTemplate: 'notFound'
 });
 
 // in the post above, it was suggested to call if(this.ready()) in the data
@@ -29,22 +25,26 @@ Router.map(function() {
       'header': { to: 'header' },
       'sidebar': { to: 'sidebar' }
     },
-    layoutTemplate: 'layout',
-    data: function() {
-      if (this.ready()) {
-        Players.find();
-        CombinedRatings.find();
-        SinglesRatings.find();
-        OffenseRatings.find();
-        DefenseRatings.find();
-      }
-    },
+//    data: function() {
+//      if (this.ready()) {
+//        Players.find();
+//        CombinedRatings.find();
+//        SinglesRatings.find();
+//        OffenseRatings.find();
+//        DefenseRatings.find();
+//      }
+//    },
     waitOn: function() {
-      return [Meteor.subscribe('players'),
-              Meteor.subscribe('combined_ratings'),
-              Meteor.subscribe('singles_ratings'),
-              Meteor.subscribe('offense_ratings'),
-              Meteor.subscribe('defense_ratings')];
+      return [subs.subscribe('players'),
+              subs.subscribe('combined_ratings'),
+              subs.subscribe('singles_ratings'),
+              subs.subscribe('offense_ratings'),
+              subs.subscribe('defense_ratings')];
+    },
+    action: function() {
+      if (this.ready()) {
+        this.render();
+      }
     }
   });
 
@@ -55,8 +55,13 @@ Router.map(function() {
       'sidebar': { to: 'sidebar' }
     },
     waitOn: function() {
-      return [Meteor.subscribe('matches'),
-              Meteor.subscribe('players')];
+      return [subs.subscribe('matches'),
+              subs.subscribe('players')];
+    },
+    action: function() {
+      if (this.ready()) {
+        this.render();
+      }
     }
   });
 
@@ -67,8 +72,13 @@ Router.map(function() {
       'sidebar': { to: 'sidebar' }
     },
     waitOn: function() {
-      return [Meteor.subscribe('players'),
-              Meteor.subscribe('combined_ratings')];
+      return [subs.subscribe('players'),
+              subs.subscribe('combined_ratings')];
+    },
+    action: function() {
+      if (this.ready()) {
+        this.render();
+      }
     }
   });
 
@@ -79,12 +89,17 @@ Router.map(function() {
       'sidebar': { to: 'sidebar' }
     },
     waitOn: function() {
-      return [Meteor.subscribe('matches'),
-              Meteor.subscribe('players'),
-              Meteor.subscribe('combined_ratings'),
-              Meteor.subscribe('singles_ratings'),
-              Meteor.subscribe('offense_ratings'),
-              Meteor.subscribe('defense_ratings')];
+      return [subs.subscribe('matches'),
+              subs.subscribe('players'),
+              subs.subscribe('combined_ratings'),
+              subs.subscribe('singles_ratings'),
+              subs.subscribe('offense_ratings'),
+              subs.subscribe('defense_ratings')];
+    },
+    action: function() {
+      if (this.ready()) {
+        this.render();
+      }
     }
   });
 
@@ -95,8 +110,13 @@ Router.map(function() {
       'sidebar': { to: 'sidebar' }
     },
     waitOn: function() {
-      return [Meteor.subscribe('matches'),
-              Meteor.subscribe('players')];
+      return [subs.subscribe('matches'),
+              subs.subscribe('players')];
+    },
+    action: function() {
+      if (this.ready()) {
+        this.render();
+      }
     }
   });
 
