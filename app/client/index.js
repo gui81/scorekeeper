@@ -235,6 +235,27 @@ Template.header.events({
   }
 });
 
+Template.sidebar.events({
+  'click #link-scorekeeper': function() {
+    $('#wrapper').toggleClass('active');
+  },
+  'click #link-addplayer': function() {
+    $('#wrapper').toggleClass('active');
+  },
+  'click #link-addmatch': function() {
+    $('#wrapper').toggleClass('active');
+  },
+  'click #link-individualstats': function() {
+    $('#wrapper').toggleClass('active');
+  },
+  'click #link-teamstats': function() {
+    $('#wrapper').toggleClass('active');
+  },
+  'click #link-rules': function() {
+    $('#wrapper').toggleClass('active');
+  }
+});
+
 
 /** after home template is rendered */
 Template.home.rendered = function() {
