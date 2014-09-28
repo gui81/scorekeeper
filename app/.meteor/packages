@@ -3,18 +3,20 @@
 # 'meteor add' and 'meteor remove' will edit this file for you,
 # but you can also edit it by hand.
 
-standard-app-packages
-insecure
-npm
-bootstrap-3
-simple-schema
-collection2
-autoform
-font-awesome
-iron-router
-spin
-jqueryui
-footable
 d3
-nvd3js
-subs-manager
+insecure
+npm-container
+standard-app-packages
+
+aldeed:autoform
+aldeed:collection2
+aldeed:simple-schema
+arunoda:subs-manager
+iron:router@=0.9.3
+meteorhacks:npm
+mizzao:bootstrap-3
+mizzao:jquery-ui
+mrt:footable
+mrt:nvd3js
+natestrauser:font-awesome
+sacha:spin
