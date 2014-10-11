@@ -1,4 +1,4 @@
-aldeed:autoform@2.0.2
+aldeed:autoform@4.0.0-rc1
 aldeed:collection2@2.1.0
 aldeed:simple-schema@1.0.3
 application-configuration@1.0.2
@@ -39,7 +39,7 @@ meteorhacks:async@1.0.0
 meteorhacks:npm@1.2.0
 minifiers@1.1.0
 minimongo@1.0.3
-mizzao:bootstrap-3@3.2.0
+mizzao:bootstrap-3@3.2.0_1
 mizzao:build-fetcher@0.2.0
 mizzao:jquery-ui@1.11.0
 mobile-status-bar@1.0.0
