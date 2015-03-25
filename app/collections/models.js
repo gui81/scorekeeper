@@ -75,7 +75,7 @@ MatchFormSchema = new SimpleSchema({
 });
 
 PlayerFormSchema = new SimpleSchema({
-  player_name: {
+  playername: {
     type: String,
     label: 'Name*',
     min: 2
@@ -542,7 +542,7 @@ if (Meteor.isServer) {
 
       add_player: function(doc) {
         check(doc, PlayerFormSchema);
-        addPlayer(doc.player_name, doc.rating);
+        addPlayer(doc.playername, doc.rating);
       }
     });
   });

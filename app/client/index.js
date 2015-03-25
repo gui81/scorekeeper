@@ -267,13 +267,13 @@ Template.home.rendered = function() {
 
 
 /**  after individual_stats template is rendered */
-Template.individual_stats.rendered = function() {
+Template.individualstats.rendered = function() {
   $('.footable').footable();
 };
 
 
 /** after team_stats template is rendered */
-Template.team_stats.rendered = function() {
+Template.teamstats.rendered = function() {
   $('.footable').footable();
 };
 
@@ -369,7 +369,7 @@ Template.last_10_players.helpers({
   }
 });
 
-Template.individual_stats.helpers({
+Template.individualstats.helpers({
   score: function() {
     var cursor = Matches.find({});
     var players = {};
@@ -419,7 +419,7 @@ Template.individual_stats.helpers({
   }
 });
 
-Template.team_stats.helpers({
+Template.teamstats.helpers({
   score: function() {
     var cursor = Matches.find({});
     var players = {};

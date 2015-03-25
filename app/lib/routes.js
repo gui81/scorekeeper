@@ -82,8 +82,8 @@ Router.map(function() {
     }
   });
 
-  this.route('individual_stats', {
-    path: '/individual_stats',
+  this.route('individualstats', {
+    path: '/individualstats',
     yieldTemplates: {
       'header': { to: 'header' },
       'sidebar': { to: 'sidebar' }
@@ -103,8 +103,8 @@ Router.map(function() {
     }
   });
 
-  this.route('team_stats', {
-    path: '/team_stats',
+  this.route('teamstats', {
+    path: '/teamstats',
     yieldTemplates: {
       'header': { to: 'header' },
       'sidebar': { to: 'sidebar' }

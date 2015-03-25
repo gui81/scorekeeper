@@ -5,18 +5,16 @@
 
 d3
 insecure
-npm-container
-standard-app-packages
 
 aldeed:autoform
 aldeed:collection2
 aldeed:simple-schema
 arunoda:subs-manager
-iron:router@=0.9.3
-meteorhacks:npm
 mizzao:bootstrap-3
 mizzao:jquery-ui
 mrt:footable
 mrt:nvd3js
 natestrauser:font-awesome
 sacha:spin
+meteor-platform
+iron:router
