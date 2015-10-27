@@ -210,6 +210,12 @@ var addGraph = function(collection, chart_dom) {
         values.push({x: rating.date_time, y: rating.rating});
       });
 
+      // sort ratings based on date_time so the charts are correctly displayed
+      // in time
+      values.sort(function(a, b) {
+        return (a.x - b.x);
+      });
+
       data.push({
         values: values,
         key: pl_r.player_name
