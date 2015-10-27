@@ -276,10 +276,14 @@ if (Meteor.isServer) {
                  !ratingValues.red_won, SinglesRatings);
   };
 
-  var update2v1Ratings = function(ratingValues) {
+  var update2v1Ratings = function(doc, ratingValues) {
     // this is where I give more value to the single player, by not dividing
     // the team rating by 2, but instead by 1.5, since they are expected to
     // win
+    if(!doc) {
+      return;
+    }
+
     if (typeof doc.rd !== 'undefined') {
       // 2 red v 1 blue
       // update combined ratings
@@ -344,7 +348,8 @@ if (Meteor.isServer) {
       updateRating(ratingValues.date, ratingValues.bd_id,
                    blue_rating2,
                    ratingValues.last_ro_combined_rating.rating,
-                   last_bd_combined_rating.rating, !red_won,
+                   ratingValues.last_bd_combined_rating.rating,
+                   !ratingValues.red_won,
                    CombinedRatings);
 
       // update singles ratings
@@ -451,7 +456,7 @@ if (Meteor.isServer) {
       update1v1Ratings(ratingValues);
     } else {
       // 2 v 1
-      update2v1Ratings(ratingValues);
+      update2v1Ratings(doc, ratingValues);
     }
   };
 
