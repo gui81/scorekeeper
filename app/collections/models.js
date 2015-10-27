@@ -372,6 +372,11 @@ if (Meteor.isServer) {
   };
 
   var updateAllRatings = function(doc, date) {
+    if (!doc) {
+      console.log('updateAllRatings: error: found empty doc');
+      return;
+    }
+
     var ro_id, rd_id, bo_id, bd_id;
     var last_ro_combined_rating, last_rd_combined_rating,
         last_bo_combined_rating, last_bd_combined_rating;
@@ -462,6 +467,7 @@ if (Meteor.isServer) {
       var INITIAL_RATING = 1250;
       var players = Players.find({}, {sort: {date_time: 1}});
       players.forEach(function(player) {
+        console.log('adding initial rating for player: ' + player.name);
         // add an initial rating for each rating being tracked
         CombinedRatings.insert({
           date_time: player.date_time,
