@@ -1,3 +1,2 @@
-FROM docker.io/meteorhacks/meteord
-# FROM centos:centos7
+FROM abernix/meteord:node-4.6.1-onbuild
 MAINTAINER Lucas Johnson <lucas.johnson@scientiallc.com>
