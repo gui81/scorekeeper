@@ -1,2 +1,4 @@
-FROM abernix/meteord:node-4.6.1-onbuild
-MAINTAINER Lucas Johnson <lucas.johnson@scientiallc.com>
+FROM ulexus/meteor:build
+
+COPY . /home/meteor/src
+RUN chown -R meteor:meteor /home/meteor/
