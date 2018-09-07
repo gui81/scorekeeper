@@ -1,4 +1,8 @@
-FROM ulexus/meteor:build
+FROM jshimko/meteor-launchpad:latest
 
-COPY . /home/meteor/src
-RUN chown -R meteor:meteor /home/meteor/
+# fix fibers, see https://github.com/jshimko/meteor-launchpad/issues/92
+RUN apt-get -y update && \
+    apt-get -y install sudo curl vim net-tools && \
+    curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash - && \
+    sudo apt-get install -y nodejs && \
+    cd /opt/meteor/dist/bundle/programs/server && npm uninstall fibers && npm install fibers

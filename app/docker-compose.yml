@@ -1,0 +1,16 @@
+scorekeeper:
+  image: scorekeeper
+  ports:
+    - "3000:3000"
+  links:
+    - mongo
+  environment:
+    - ROOT_URL=http://localhost:3000/
+    - MONGO_URL=mongodb://mongo:27017/meteor
+
+mongo:
+  image: mongo:latest
+  ports:
+    - "27017"
+  command:
+    - --storageEngine=wiredTiger
