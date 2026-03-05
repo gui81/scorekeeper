@@ -50,6 +50,7 @@ export default defineComponent({
 
         const total = players[id].wins + players[id].losses;
         result.push({
+          id,
           name: player.name,
           wins: players[id].wins,
           losses: players[id].losses,
@@ -127,8 +128,8 @@ export default defineComponent({
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="s in paginatedStats" :key="s.name">
-                  <td>{{ s.name }}</td>
+                <tr v-for="s in paginatedStats" :key="s.id">
+                  <td><router-link :to="'/player/' + s.id">{{ s.name }}</router-link></td>
                   <td class="d-none d-md-table-cell">{{ s.wins }}</td>
                   <td class="d-none d-md-table-cell">{{ s.losses }}</td>
                   <td class="d-none d-md-table-cell">{{ s.percent }}%</td>

@@ -101,7 +101,7 @@ export default defineComponent({
               </thead>
               <tbody>
                 <tr v-for="player in recentPlayers" :key="player._id">
-                  <td>{{ player.name }}</td>
+                  <td><router-link :to="'/player/' + player._id">{{ player.name }}</router-link></td>
                   <td>{{ player.initialRating }}</td>
                 </tr>
                 <tr v-if="recentPlayers.length === 0">
