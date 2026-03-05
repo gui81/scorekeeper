@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor';
-import { defineComponent, ref, computed } from 'vue';
+import { defineComponent, ref } from 'vue';
 import { useTracker, useSubscribe } from '../composables';
 import { Players, Matches } from '../../api/collections';
 
@@ -19,7 +19,9 @@ export default defineComponent({
     const successMsg = ref('');
 
     const playerNames = useTracker(() => {
-      return Players.find({}).fetch().map((p) => p.name);
+      return Players.find({})
+        .fetch()
+        .map((p) => p.name);
     });
 
     const winStats = useTracker(() => {
@@ -43,25 +45,27 @@ export default defineComponent({
     });
 
     const recentMatches = useTracker(() => {
-      return Matches.find({}, { sort: { date_time: -1 }, limit: 10 }).fetch().map((m) => {
-        const findPlayer = (id) => {
-          if (!id) return 'N/A';
-          const p = Players.findOne({ _id: id });
-          return p ? p.name : 'N/A';
-        };
+      return Matches.find({}, { sort: { date_time: -1 }, limit: 10 })
+        .fetch()
+        .map((m) => {
+          const findPlayer = (id) => {
+            if (!id) return 'N/A';
+            const p = Players.findOne({ _id: id });
+            return p ? p.name : 'N/A';
+          };
 
-        const dt = new Date(m.date_time);
-        return {
-          _id: m._id,
-          dateTime: dt.toLocaleString(),
-          roName: findPlayer(m.ro_id),
-          rdName: findPlayer(m.rd_id),
-          boName: findPlayer(m.bo_id),
-          bdName: findPlayer(m.bd_id),
-          rs: m.rs,
-          bs: m.bs,
-        };
-      });
+          const dt = new Date(m.date_time);
+          return {
+            _id: m._id,
+            dateTime: dt.toLocaleString(),
+            roName: findPlayer(m.ro_id),
+            rdName: findPlayer(m.rd_id),
+            boName: findPlayer(m.bo_id),
+            bdName: findPlayer(m.bd_id),
+            rs: m.rs,
+            bs: m.bs,
+          };
+        });
     });
 
     async function submitMatch() {
@@ -76,7 +80,14 @@ export default defineComponent({
       const scoreR = parseInt(rs.value, 10);
       const scoreB = parseInt(bs.value, 10);
 
-      if (isNaN(scoreR) || isNaN(scoreB) || scoreR < 0 || scoreR > 10 || scoreB < 0 || scoreB > 10) {
+      if (
+        isNaN(scoreR) ||
+        isNaN(scoreB) ||
+        scoreR < 0 ||
+        scoreR > 10 ||
+        scoreB < 0 ||
+        scoreB > 10
+      ) {
         errorMsg.value = 'Scores must be between 0 and 10.';
         return;
       }
@@ -104,7 +115,20 @@ export default defineComponent({
       }
     }
 
-    return { ro, rd, bo, bd, rs, bs, errorMsg, successMsg, playerNames, winStats, recentMatches, submitMatch };
+    return {
+      ro,
+      rd,
+      bo,
+      bd,
+      rs,
+      bs,
+      errorMsg,
+      successMsg,
+      playerNames,
+      winStats,
+      recentMatches,
+      submitMatch,
+    };
   },
   template: `
     <div class="container">

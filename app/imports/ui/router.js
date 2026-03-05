@@ -15,7 +15,14 @@ const routes = [
   { path: '/teamstats', name: 'teamstats', component: TeamStats },
   { path: '/rules', name: 'rules', component: Rules },
   { path: '/player/:id', name: 'playerDetail', component: PlayerDetail, props: true },
-  { path: '/:pathMatch(.*)*', name: 'notFound', component: { template: '<div class="container mt-4"><h2>This is not the page you are looking for.</h2></div>' } },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'notFound',
+    component: {
+      template:
+        '<div class="container mt-4"><h2>This is not the page you are looking for.</h2></div>',
+    },
+  },
 ];
 
 export default createRouter({

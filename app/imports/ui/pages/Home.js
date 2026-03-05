@@ -1,7 +1,13 @@
-import { defineComponent, ref, onMounted, onUnmounted, watch } from 'vue';
+import { defineComponent, ref, onUnmounted, watch } from 'vue';
 import { Chart, registerables } from 'chart.js';
 import { useTracker, useSubscribe } from '../composables';
-import { Players, CombinedRatings, SinglesRatings, OffenseRatings, DefenseRatings } from '../../api/collections';
+import {
+  Players,
+  CombinedRatings,
+  SinglesRatings,
+  OffenseRatings,
+  DefenseRatings,
+} from '../../api/collections';
 
 Chart.register(...registerables);
 
@@ -71,11 +77,11 @@ function createChart(canvas, collection, title) {
 export default defineComponent({
   name: 'Home',
   setup() {
-    const playersReady = useSubscribe('players');
-    const combinedReady = useSubscribe('combined_ratings');
-    const singlesReady = useSubscribe('singles_ratings');
-    const offenseReady = useSubscribe('offense_ratings');
-    const defenseReady = useSubscribe('defense_ratings');
+    useSubscribe('players');
+    useSubscribe('combined_ratings');
+    useSubscribe('singles_ratings');
+    useSubscribe('offense_ratings');
+    useSubscribe('defense_ratings');
 
     const combinedCanvas = ref(null);
     const singlesCanvas = ref(null);
@@ -83,7 +89,6 @@ export default defineComponent({
     const defenseCanvas = ref(null);
 
     const charts = [];
-    let chartsCreated = false;
 
     // Use a tracker to detect when data changes
     const dataVersion = useTracker(() => {
@@ -113,18 +118,17 @@ export default defineComponent({
       if (defenseCanvas.value) {
         charts.push(createChart(defenseCanvas.value, DefenseRatings, 'Doubles Defense Rating'));
       }
-      chartsCreated = true;
     }
 
-    watch(dataVersion, () => {
-      if (combinedCanvas.value) {
-        buildCharts();
-      }
-    }, { deep: true });
-
-    onMounted(() => {
-      // Initial build will happen when data arrives via the watcher
-    });
+    watch(
+      dataVersion,
+      () => {
+        if (combinedCanvas.value) {
+          buildCharts();
+        }
+      },
+      { deep: true },
+    );
 
     onUnmounted(() => {
       charts.forEach((c) => c.destroy());
@@ -135,8 +139,6 @@ export default defineComponent({
       singlesCanvas,
       offenseCanvas,
       defenseCanvas,
-      playersReady,
-      combinedReady,
     };
   },
   template: `

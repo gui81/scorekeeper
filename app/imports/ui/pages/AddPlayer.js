@@ -23,14 +23,19 @@ export default defineComponent({
     ];
 
     const recentPlayers = useTracker(() => {
-      return Players.find({}, { sort: { date_time: -1 }, limit: 10 }).fetch().map((p) => {
-        const eloRating = CombinedRatings.findOne({ player_id: p._id }, { sort: { date_time: 1 } });
-        return {
-          _id: p._id,
-          name: p.name,
-          initialRating: eloRating ? Math.round(eloRating.rating) : 'N/A',
-        };
-      });
+      return Players.find({}, { sort: { date_time: -1 }, limit: 10 })
+        .fetch()
+        .map((p) => {
+          const eloRating = CombinedRatings.findOne(
+            { player_id: p._id },
+            { sort: { date_time: 1 } },
+          );
+          return {
+            _id: p._id,
+            name: p.name,
+            initialRating: eloRating ? Math.round(eloRating.rating) : 'N/A',
+          };
+        });
     });
 
     async function submitPlayer() {

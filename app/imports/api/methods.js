@@ -15,13 +15,21 @@ const K_RATING_COEFFICIENT = 50;
 const F_RATING_INTERVAL_SCALE_WEIGHT = 1000;
 
 function winExpectancy(rating, opponentRating) {
-  return 1 / (Math.pow(10, (-(rating - opponentRating) / F_RATING_INTERVAL_SCALE_WEIGHT)) + 1);
+  return 1 / (Math.pow(10, -(rating - opponentRating) / F_RATING_INTERVAL_SCALE_WEIGHT) + 1);
 }
 
-async function updateRating(date, playerId, rating, opponentRating, ratingToAdjust, win, collection) {
+async function updateRating(
+  date,
+  playerId,
+  rating,
+  opponentRating,
+  ratingToAdjust,
+  win,
+  collection,
+) {
   const S = win ? 1 : 0;
   const We = winExpectancy(rating, opponentRating);
-  const Rn = ratingToAdjust + (K_RATING_COEFFICIENT * (S - We));
+  const Rn = ratingToAdjust + K_RATING_COEFFICIENT * (S - We);
 
   await collection.insertAsync({
     date_time: date,
@@ -47,26 +55,122 @@ async function update2v2Ratings(rv) {
   const blueRating = (rv.lastBoCombined.rating + rv.lastBdCombined.rating) / 2.0;
 
   // Combined ratings
-  await updateRating(rv.date, rv.roId, redRating, blueRating, rv.lastRoCombined.rating, rv.redWon, CombinedRatings);
-  await updateRating(rv.date, rv.rdId, redRating, blueRating, rv.lastRdCombined.rating, rv.redWon, CombinedRatings);
-  await updateRating(rv.date, rv.boId, blueRating, redRating, rv.lastBoCombined.rating, !rv.redWon, CombinedRatings);
-  await updateRating(rv.date, rv.bdId, blueRating, redRating, rv.lastBdCombined.rating, !rv.redWon, CombinedRatings);
+  await updateRating(
+    rv.date,
+    rv.roId,
+    redRating,
+    blueRating,
+    rv.lastRoCombined.rating,
+    rv.redWon,
+    CombinedRatings,
+  );
+  await updateRating(
+    rv.date,
+    rv.rdId,
+    redRating,
+    blueRating,
+    rv.lastRdCombined.rating,
+    rv.redWon,
+    CombinedRatings,
+  );
+  await updateRating(
+    rv.date,
+    rv.boId,
+    blueRating,
+    redRating,
+    rv.lastBoCombined.rating,
+    !rv.redWon,
+    CombinedRatings,
+  );
+  await updateRating(
+    rv.date,
+    rv.bdId,
+    blueRating,
+    redRating,
+    rv.lastBdCombined.rating,
+    !rv.redWon,
+    CombinedRatings,
+  );
 
   // Offense/Defense ratings
-  await updateRating(rv.date, rv.roId, redRating, blueRating, rv.lastRoOffense.rating, rv.redWon, OffenseRatings);
-  await updateRating(rv.date, rv.rdId, redRating, blueRating, rv.lastRdDefense.rating, rv.redWon, DefenseRatings);
-  await updateRating(rv.date, rv.boId, blueRating, redRating, rv.lastBoOffense.rating, !rv.redWon, OffenseRatings);
-  await updateRating(rv.date, rv.bdId, blueRating, redRating, rv.lastBdDefense.rating, !rv.redWon, DefenseRatings);
+  await updateRating(
+    rv.date,
+    rv.roId,
+    redRating,
+    blueRating,
+    rv.lastRoOffense.rating,
+    rv.redWon,
+    OffenseRatings,
+  );
+  await updateRating(
+    rv.date,
+    rv.rdId,
+    redRating,
+    blueRating,
+    rv.lastRdDefense.rating,
+    rv.redWon,
+    DefenseRatings,
+  );
+  await updateRating(
+    rv.date,
+    rv.boId,
+    blueRating,
+    redRating,
+    rv.lastBoOffense.rating,
+    !rv.redWon,
+    OffenseRatings,
+  );
+  await updateRating(
+    rv.date,
+    rv.bdId,
+    blueRating,
+    redRating,
+    rv.lastBdDefense.rating,
+    !rv.redWon,
+    DefenseRatings,
+  );
 }
 
 async function update1v1Ratings(rv) {
   // Combined ratings
-  await updateRating(rv.date, rv.roId, rv.lastRoCombined.rating, rv.lastBoCombined.rating, rv.lastRoCombined.rating, rv.redWon, CombinedRatings);
-  await updateRating(rv.date, rv.boId, rv.lastBoCombined.rating, rv.lastRoCombined.rating, rv.lastBoCombined.rating, !rv.redWon, CombinedRatings);
+  await updateRating(
+    rv.date,
+    rv.roId,
+    rv.lastRoCombined.rating,
+    rv.lastBoCombined.rating,
+    rv.lastRoCombined.rating,
+    rv.redWon,
+    CombinedRatings,
+  );
+  await updateRating(
+    rv.date,
+    rv.boId,
+    rv.lastBoCombined.rating,
+    rv.lastRoCombined.rating,
+    rv.lastBoCombined.rating,
+    !rv.redWon,
+    CombinedRatings,
+  );
 
   // Singles ratings
-  await updateRating(rv.date, rv.roId, rv.lastRoSingles.rating, rv.lastBoSingles.rating, rv.lastRoSingles.rating, rv.redWon, SinglesRatings);
-  await updateRating(rv.date, rv.boId, rv.lastBoSingles.rating, rv.lastRoSingles.rating, rv.lastBoSingles.rating, !rv.redWon, SinglesRatings);
+  await updateRating(
+    rv.date,
+    rv.roId,
+    rv.lastRoSingles.rating,
+    rv.lastBoSingles.rating,
+    rv.lastRoSingles.rating,
+    rv.redWon,
+    SinglesRatings,
+  );
+  await updateRating(
+    rv.date,
+    rv.boId,
+    rv.lastBoSingles.rating,
+    rv.lastRoSingles.rating,
+    rv.lastBoSingles.rating,
+    !rv.redWon,
+    SinglesRatings,
+  );
 }
 
 async function update2v1Ratings(doc, rv) {
@@ -77,31 +181,127 @@ async function update2v1Ratings(doc, rv) {
     const redRating = (rv.lastRoCombined.rating + rv.lastRdCombined.rating) / 1.5;
 
     // Combined
-    await updateRating(rv.date, rv.roId, redRating, rv.lastBoCombined.rating, rv.lastRoCombined.rating, rv.redWon, CombinedRatings);
-    await updateRating(rv.date, rv.rdId, redRating, rv.lastBoCombined.rating, rv.lastRdCombined.rating, rv.redWon, CombinedRatings);
-    await updateRating(rv.date, rv.boId, rv.lastBoCombined.rating, redRating, rv.lastBoCombined.rating, !rv.redWon, CombinedRatings);
+    await updateRating(
+      rv.date,
+      rv.roId,
+      redRating,
+      rv.lastBoCombined.rating,
+      rv.lastRoCombined.rating,
+      rv.redWon,
+      CombinedRatings,
+    );
+    await updateRating(
+      rv.date,
+      rv.rdId,
+      redRating,
+      rv.lastBoCombined.rating,
+      rv.lastRdCombined.rating,
+      rv.redWon,
+      CombinedRatings,
+    );
+    await updateRating(
+      rv.date,
+      rv.boId,
+      rv.lastBoCombined.rating,
+      redRating,
+      rv.lastBoCombined.rating,
+      !rv.redWon,
+      CombinedRatings,
+    );
 
     // Offense/Defense for team side
-    await updateRating(rv.date, rv.roId, redRating, rv.lastBoSingles.rating, rv.lastRoOffense.rating, rv.redWon, OffenseRatings);
-    await updateRating(rv.date, rv.rdId, redRating, rv.lastBoSingles.rating, rv.lastRdDefense.rating, rv.redWon, DefenseRatings);
+    await updateRating(
+      rv.date,
+      rv.roId,
+      redRating,
+      rv.lastBoSingles.rating,
+      rv.lastRoOffense.rating,
+      rv.redWon,
+      OffenseRatings,
+    );
+    await updateRating(
+      rv.date,
+      rv.rdId,
+      redRating,
+      rv.lastBoSingles.rating,
+      rv.lastRdDefense.rating,
+      rv.redWon,
+      DefenseRatings,
+    );
 
     // Singles for solo player
-    await updateRating(rv.date, rv.boId, rv.lastBoSingles.rating, redRating, rv.lastBoSingles.rating, !rv.redWon, SinglesRatings);
+    await updateRating(
+      rv.date,
+      rv.boId,
+      rv.lastBoSingles.rating,
+      redRating,
+      rv.lastBoSingles.rating,
+      !rv.redWon,
+      SinglesRatings,
+    );
   } else {
     // 1 red v 2 blue
     const blueRating = (rv.lastBoCombined.rating + rv.lastBdCombined.rating) / 1.5;
 
     // Combined
-    await updateRating(rv.date, rv.roId, rv.lastRoCombined.rating, blueRating, rv.lastRoCombined.rating, rv.redWon, CombinedRatings);
-    await updateRating(rv.date, rv.boId, blueRating, rv.lastRoCombined.rating, rv.lastBoCombined.rating, !rv.redWon, CombinedRatings);
-    await updateRating(rv.date, rv.bdId, blueRating, rv.lastRoCombined.rating, rv.lastBdCombined.rating, !rv.redWon, CombinedRatings);
+    await updateRating(
+      rv.date,
+      rv.roId,
+      rv.lastRoCombined.rating,
+      blueRating,
+      rv.lastRoCombined.rating,
+      rv.redWon,
+      CombinedRatings,
+    );
+    await updateRating(
+      rv.date,
+      rv.boId,
+      blueRating,
+      rv.lastRoCombined.rating,
+      rv.lastBoCombined.rating,
+      !rv.redWon,
+      CombinedRatings,
+    );
+    await updateRating(
+      rv.date,
+      rv.bdId,
+      blueRating,
+      rv.lastRoCombined.rating,
+      rv.lastBdCombined.rating,
+      !rv.redWon,
+      CombinedRatings,
+    );
 
     // Singles for solo player
-    await updateRating(rv.date, rv.roId, rv.lastRoSingles.rating, blueRating, rv.lastRoSingles.rating, rv.redWon, SinglesRatings);
+    await updateRating(
+      rv.date,
+      rv.roId,
+      rv.lastRoSingles.rating,
+      blueRating,
+      rv.lastRoSingles.rating,
+      rv.redWon,
+      SinglesRatings,
+    );
 
     // Offense/Defense for team side
-    await updateRating(rv.date, rv.boId, blueRating, rv.lastRoSingles.rating, rv.lastBoOffense.rating, !rv.redWon, OffenseRatings);
-    await updateRating(rv.date, rv.bdId, blueRating, rv.lastRoSingles.rating, rv.lastBdDefense.rating, !rv.redWon, DefenseRatings);
+    await updateRating(
+      rv.date,
+      rv.boId,
+      blueRating,
+      rv.lastRoSingles.rating,
+      rv.lastBoOffense.rating,
+      !rv.redWon,
+      OffenseRatings,
+    );
+    await updateRating(
+      rv.date,
+      rv.bdId,
+      blueRating,
+      rv.lastRoSingles.rating,
+      rv.lastBdDefense.rating,
+      !rv.redWon,
+      DefenseRatings,
+    );
   }
 }
 
@@ -115,25 +315,55 @@ async function updateAllRatings(doc, date) {
 
   if (typeof doc.ro !== 'undefined') {
     rv.roId = await getPlayerId(doc.ro);
-    rv.lastRoCombined = await CombinedRatings.findOneAsync({ player_id: rv.roId }, { sort: { date_time: -1 } });
-    rv.lastRoSingles = await SinglesRatings.findOneAsync({ player_id: rv.roId }, { sort: { date_time: -1 } });
-    rv.lastRoOffense = await OffenseRatings.findOneAsync({ player_id: rv.roId }, { sort: { date_time: -1 } });
+    rv.lastRoCombined = await CombinedRatings.findOneAsync(
+      { player_id: rv.roId },
+      { sort: { date_time: -1 } },
+    );
+    rv.lastRoSingles = await SinglesRatings.findOneAsync(
+      { player_id: rv.roId },
+      { sort: { date_time: -1 } },
+    );
+    rv.lastRoOffense = await OffenseRatings.findOneAsync(
+      { player_id: rv.roId },
+      { sort: { date_time: -1 } },
+    );
   }
   if (typeof doc.rd !== 'undefined') {
     rv.rdId = await getPlayerId(doc.rd);
-    rv.lastRdCombined = await CombinedRatings.findOneAsync({ player_id: rv.rdId }, { sort: { date_time: -1 } });
-    rv.lastRdDefense = await DefenseRatings.findOneAsync({ player_id: rv.rdId }, { sort: { date_time: -1 } });
+    rv.lastRdCombined = await CombinedRatings.findOneAsync(
+      { player_id: rv.rdId },
+      { sort: { date_time: -1 } },
+    );
+    rv.lastRdDefense = await DefenseRatings.findOneAsync(
+      { player_id: rv.rdId },
+      { sort: { date_time: -1 } },
+    );
   }
   if (typeof doc.bo !== 'undefined') {
     rv.boId = await getPlayerId(doc.bo);
-    rv.lastBoCombined = await CombinedRatings.findOneAsync({ player_id: rv.boId }, { sort: { date_time: -1 } });
-    rv.lastBoSingles = await SinglesRatings.findOneAsync({ player_id: rv.boId }, { sort: { date_time: -1 } });
-    rv.lastBoOffense = await OffenseRatings.findOneAsync({ player_id: rv.boId }, { sort: { date_time: -1 } });
+    rv.lastBoCombined = await CombinedRatings.findOneAsync(
+      { player_id: rv.boId },
+      { sort: { date_time: -1 } },
+    );
+    rv.lastBoSingles = await SinglesRatings.findOneAsync(
+      { player_id: rv.boId },
+      { sort: { date_time: -1 } },
+    );
+    rv.lastBoOffense = await OffenseRatings.findOneAsync(
+      { player_id: rv.boId },
+      { sort: { date_time: -1 } },
+    );
   }
   if (typeof doc.bd !== 'undefined') {
     rv.bdId = await getPlayerId(doc.bd);
-    rv.lastBdCombined = await CombinedRatings.findOneAsync({ player_id: rv.bdId }, { sort: { date_time: -1 } });
-    rv.lastBdDefense = await DefenseRatings.findOneAsync({ player_id: rv.bdId }, { sort: { date_time: -1 } });
+    rv.lastBdCombined = await CombinedRatings.findOneAsync(
+      { player_id: rv.bdId },
+      { sort: { date_time: -1 } },
+    );
+    rv.lastBdDefense = await DefenseRatings.findOneAsync(
+      { player_id: rv.bdId },
+      { sort: { date_time: -1 } },
+    );
   }
 
   if (typeof doc.rd !== 'undefined' && typeof doc.bd !== 'undefined') {
@@ -250,7 +480,11 @@ if (Meteor.isServer) {
 
       for (const player of players) {
         console.log('Adding initial rating for player: ' + player.name);
-        const initRating = { date_time: player.date_time, player_id: player._id, rating: INITIAL_RATING };
+        const initRating = {
+          date_time: player.date_time,
+          player_id: player._id,
+          rating: INITIAL_RATING,
+        };
         await CombinedRatings.insertAsync({ ...initRating });
         await SinglesRatings.insertAsync({ ...initRating });
         await OffenseRatings.insertAsync({ ...initRating });

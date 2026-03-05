@@ -98,12 +98,12 @@
 }
 
 /* Sortable table headers */
-th[role="button"] {
+th[role='button'] {
   cursor: pointer;
   user-select: none;
 }
 
-th[role="button"]:hover {
+th[role='button']:hover {
   background: rgba(0, 0, 0, 0.05);
 }
 

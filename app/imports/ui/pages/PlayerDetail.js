@@ -1,6 +1,13 @@
-import { defineComponent, ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { defineComponent, ref, computed, onUnmounted, watch } from 'vue';
 import { useTracker, useSubscribe } from '../composables';
-import { Players, Matches, CombinedRatings, SinglesRatings, OffenseRatings, DefenseRatings } from '../../api/collections';
+import {
+  Players,
+  Matches,
+  CombinedRatings,
+  SinglesRatings,
+  OffenseRatings,
+  DefenseRatings,
+} from '../../api/collections';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -39,21 +46,31 @@ function buildRatingChartData(playerId) {
 
 function computePlayerStats(playerId, allMatches, allPlayers) {
   const matches = allMatches.filter(
-    (m) => m.ro_id === playerId || m.rd_id === playerId || m.bo_id === playerId || m.bd_id === playerId
+    (m) =>
+      m.ro_id === playerId || m.rd_id === playerId || m.bo_id === playerId || m.bd_id === playerId,
   );
 
   // Sort by date for streak calculations
   const sorted = [...matches].sort((a, b) => a.date_time - b.date_time);
 
-  let wins = 0, losses = 0;
-  let singlesWins = 0, singlesLosses = 0;
-  let doublesWins = 0, doublesLosses = 0;
-  let offWins = 0, offLosses = 0;
-  let defWins = 0, defLosses = 0;
-  let totalScored = 0, totalAllowed = 0;
-  let shutoutWins = 0, shutoutLosses = 0;
-  let blowoutWins = 0, blowoutLosses = 0;
-  let closeWins = 0, closeLosses = 0;
+  let wins = 0,
+    losses = 0;
+  let singlesWins = 0,
+    singlesLosses = 0;
+  let doublesWins = 0,
+    doublesLosses = 0;
+  let offWins = 0,
+    offLosses = 0;
+  let defWins = 0,
+    defLosses = 0;
+  let totalScored = 0,
+    totalAllowed = 0;
+  let shutoutWins = 0,
+    shutoutLosses = 0;
+  let blowoutWins = 0,
+    blowoutLosses = 0;
+  let closeWins = 0,
+    closeLosses = 0;
   let currentStreak = 0;
   let currentStreakType = null;
   let longestWinStreak = 0;
@@ -81,22 +98,30 @@ function computePlayerStats(playerId, allMatches, allPlayers) {
     const isDefense = m.rd_id === playerId || m.bd_id === playerId;
 
     // Win/loss totals
-    if (playerWon) { wins++; } else { losses++; }
+    if (playerWon) {
+      wins++;
+    } else {
+      losses++;
+    }
 
     // Singles/doubles
     if (isSingles) {
-      if (playerWon) singlesWins++; else singlesLosses++;
+      if (playerWon) singlesWins++;
+      else singlesLosses++;
     }
     if (isDoubles) {
-      if (playerWon) doublesWins++; else doublesLosses++;
+      if (playerWon) doublesWins++;
+      else doublesLosses++;
     }
 
     // Position
     if (isOffense) {
-      if (playerWon) offWins++; else offLosses++;
+      if (playerWon) offWins++;
+      else offLosses++;
     }
     if (isDefense) {
-      if (playerWon) defWins++; else defLosses++;
+      if (playerWon) defWins++;
+      else defLosses++;
     }
 
     // Scoring
@@ -109,12 +134,14 @@ function computePlayerStats(playerId, allMatches, allPlayers) {
 
     // Blowouts (5+ point diff)
     if (diff >= 5) {
-      if (playerWon) blowoutWins++; else blowoutLosses++;
+      if (playerWon) blowoutWins++;
+      else blowoutLosses++;
     }
 
     // Close games (1-2 point diff)
     if (diff <= 2) {
-      if (playerWon) closeWins++; else closeLosses++;
+      if (playerWon) closeWins++;
+      else closeLosses++;
     }
 
     // Streaks
@@ -148,7 +175,8 @@ function computePlayerStats(playerId, allMatches, allPlayers) {
     }
     opponents.forEach((oppId) => {
       if (!h2h[oppId]) h2h[oppId] = { wins: 0, losses: 0 };
-      if (playerWon) h2h[oppId].wins++; else h2h[oppId].losses++;
+      if (playerWon) h2h[oppId].wins++;
+      else h2h[oppId].losses++;
     });
 
     // Partner tracking (doubles only)
@@ -161,7 +189,8 @@ function computePlayerStats(playerId, allMatches, allPlayers) {
       }
       if (partnerId) {
         if (!partners[partnerId]) partners[partnerId] = { wins: 0, losses: 0 };
-        if (playerWon) partners[partnerId].wins++; else partners[partnerId].losses++;
+        if (playerWon) partners[partnerId].wins++;
+        else partners[partnerId].losses++;
       }
     }
   });
@@ -170,45 +199,48 @@ function computePlayerStats(playerId, allMatches, allPlayers) {
   const winPct = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
 
   // Build head-to-head list
-  const h2hList = Object.entries(h2h).map(([oppId, record]) => {
-    const opp = allPlayers.find((p) => p._id === oppId);
-    const total = record.wins + record.losses;
-    return {
-      id: oppId,
-      name: opp ? opp.name : 'Unknown',
-      wins: record.wins,
-      losses: record.losses,
-      pct: total > 0 ? Math.round((record.wins / total) * 100) : 0,
-    };
-  }).sort((a, b) => (b.wins + b.losses) - (a.wins + a.losses));
+  const h2hList = Object.entries(h2h)
+    .map(([oppId, record]) => {
+      const opp = allPlayers.find((p) => p._id === oppId);
+      const total = record.wins + record.losses;
+      return {
+        id: oppId,
+        name: opp ? opp.name : 'Unknown',
+        wins: record.wins,
+        losses: record.losses,
+        pct: total > 0 ? Math.round((record.wins / total) * 100) : 0,
+      };
+    })
+    .sort((a, b) => b.wins + b.losses - (a.wins + a.losses));
 
   // Build partner list
-  const partnerList = Object.entries(partners).map(([pId, record]) => {
-    const p = allPlayers.find((pl) => pl._id === pId);
-    const total = record.wins + record.losses;
-    return {
-      id: pId,
-      name: p ? p.name : 'Unknown',
-      wins: record.wins,
-      losses: record.losses,
-      pct: total > 0 ? Math.round((record.wins / total) * 100) : 0,
-    };
-  }).sort((a, b) => b.pct - a.pct);
+  const partnerList = Object.entries(partners)
+    .map(([pId, record]) => {
+      const p = allPlayers.find((pl) => pl._id === pId);
+      const total = record.wins + record.losses;
+      return {
+        id: pId,
+        name: p ? p.name : 'Unknown',
+        wins: record.wins,
+        losses: record.losses,
+        pct: total > 0 ? Math.round((record.wins / total) * 100) : 0,
+      };
+    })
+    .sort((a, b) => b.pct - a.pct);
 
   // Nemesis (opponent with most wins against this player, min 2 matches)
-  const nemesis = h2hList
-    .filter((o) => (o.wins + o.losses) >= 2)
-    .sort((a, b) => a.pct - b.pct)[0] || null;
+  const nemesis =
+    h2hList.filter((o) => o.wins + o.losses >= 2).sort((a, b) => a.pct - b.pct)[0] || null;
 
   // Favorite opponent (opponent this player beats most, min 2 matches)
-  const favorite = h2hList
-    .filter((o) => (o.wins + o.losses) >= 2)
-    .sort((a, b) => b.pct - a.pct)[0] || null;
+  const favorite =
+    h2hList.filter((o) => o.wins + o.losses >= 2).sort((a, b) => b.pct - a.pct)[0] || null;
 
   // Best/worst partner (min 2 matches)
-  const qualifiedPartners = partnerList.filter((p) => (p.wins + p.losses) >= 2);
+  const qualifiedPartners = partnerList.filter((p) => p.wins + p.losses >= 2);
   const bestPartner = qualifiedPartners[0] || null;
-  const worstPartner = qualifiedPartners.length > 0 ? qualifiedPartners[qualifiedPartners.length - 1] : null;
+  const worstPartner =
+    qualifiedPartners.length > 0 ? qualifiedPartners[qualifiedPartners.length - 1] : null;
 
   // Rating stats
   function getRatingStats(collection) {
@@ -217,7 +249,8 @@ function computePlayerStats(playerId, allMatches, allPlayers) {
     const current = Math.round(ratings[ratings.length - 1].rating);
     const peak = Math.round(Math.max(...ratings.map((r) => r.rating)));
     // Trend: change over last 10 data points
-    const recentStart = ratings.length > 10 ? ratings[ratings.length - 11].rating : ratings[0].rating;
+    const recentStart =
+      ratings.length > 10 ? ratings[ratings.length - 11].rating : ratings[0].rating;
     const trend = Math.round(ratings[ratings.length - 1].rating - recentStart);
     return { current, peak, trend };
   }
@@ -229,25 +262,42 @@ function computePlayerStats(playerId, allMatches, allPlayers) {
 
   // Current rank among all players
   const allPlayersList = allPlayers.slice();
-  const allCombinedRatings = allPlayersList.map((p) => {
-    const r = CombinedRatings.findOne({ player_id: p._id }, { sort: { date_time: -1 } });
-    return { playerId: p._id, rating: r ? r.rating : 0 };
-  }).sort((a, b) => b.rating - a.rating);
+  const allCombinedRatings = allPlayersList
+    .map((p) => {
+      const r = CombinedRatings.findOne({ player_id: p._id }, { sort: { date_time: -1 } });
+      return { playerId: p._id, rating: r ? r.rating : 0 };
+    })
+    .sort((a, b) => b.rating - a.rating);
   const rank = allCombinedRatings.findIndex((r) => r.playerId === playerId) + 1;
 
   return {
-    totalMatches, wins, losses, winPct,
-    singlesWins, singlesLosses, doublesWins, doublesLosses,
-    offWins, offLosses, defWins, defLosses,
+    totalMatches,
+    wins,
+    losses,
+    winPct,
+    singlesWins,
+    singlesLosses,
+    doublesWins,
+    doublesLosses,
+    offWins,
+    offLosses,
+    defWins,
+    defLosses,
     avgScored: totalMatches > 0 ? (totalScored / totalMatches).toFixed(1) : '0.0',
     avgAllowed: totalMatches > 0 ? (totalAllowed / totalMatches).toFixed(1) : '0.0',
     pointDiff: totalScored - totalAllowed,
-    shutoutWins, shutoutLosses,
-    blowoutWins, blowoutLosses,
-    closeWins, closeLosses,
+    shutoutWins,
+    shutoutLosses,
+    blowoutWins,
+    blowoutLosses,
+    closeWins,
+    closeLosses,
     currentStreak: totalMatches > 0 ? `${currentStreak}${currentStreakType}` : 'N/A',
     longestWinStreak,
-    combinedRating, singlesRating, offenseRating, defenseRating,
+    combinedRating,
+    singlesRating,
+    offenseRating,
+    defenseRating,
     ratingClass: combinedRating.current !== 'N/A' ? getRatingClass(combinedRating.current) : 'N/A',
     rank,
     totalPlayers: allPlayersList.length,
@@ -299,15 +349,20 @@ export default defineComponent({
       data.sort((a, b) => {
         const aVal = a[col];
         const bVal = b[col];
-        if (typeof aVal === 'string') return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+        if (typeof aVal === 'string')
+          return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
         return asc ? aVal - bVal : bVal - aVal;
       });
       return data;
     });
 
     function toggleH2hSort(col) {
-      if (h2hSortCol.value === col) { h2hSortAsc.value = !h2hSortAsc.value; }
-      else { h2hSortCol.value = col; h2hSortAsc.value = false; }
+      if (h2hSortCol.value === col) {
+        h2hSortAsc.value = !h2hSortAsc.value;
+      } else {
+        h2hSortCol.value = col;
+        h2hSortAsc.value = false;
+      }
     }
 
     function h2hSortIndicator(col) {
@@ -334,7 +389,11 @@ export default defineComponent({
             x: {
               type: 'linear',
               title: { display: true, text: 'Time' },
-              ticks: { callback(value) { return new Date(value).toLocaleDateString(); } },
+              ticks: {
+                callback(value) {
+                  return new Date(value).toLocaleDateString();
+                },
+              },
             },
             y: {
               title: { display: true, text: 'Rating (Elo)' },
@@ -345,9 +404,13 @@ export default defineComponent({
       });
     }
 
-    watch(stats, () => {
-      if (chartCanvas.value && stats.value) buildChart();
-    }, { deep: true });
+    watch(
+      stats,
+      () => {
+        if (chartCanvas.value && stats.value) buildChart();
+      },
+      { deep: true },
+    );
 
     onUnmounted(() => {
       if (chartInstance) chartInstance.destroy();
@@ -372,9 +435,15 @@ export default defineComponent({
     }
 
     return {
-      player, stats, chartCanvas,
-      sortedH2h, toggleH2hSort, h2hSortIndicator,
-      trendArrow, trendClass, pctDisplay,
+      player,
+      stats,
+      chartCanvas,
+      sortedH2h,
+      toggleH2hSort,
+      h2hSortIndicator,
+      trendArrow,
+      trendClass,
+      pctDisplay,
     };
   },
   template: `

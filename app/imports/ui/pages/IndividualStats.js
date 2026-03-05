@@ -1,6 +1,13 @@
 import { defineComponent, ref, computed } from 'vue';
 import { useTracker, useSubscribe } from '../composables';
-import { Players, Matches, CombinedRatings, SinglesRatings, OffenseRatings, DefenseRatings } from '../../api/collections';
+import {
+  Players,
+  Matches,
+  CombinedRatings,
+  SinglesRatings,
+  OffenseRatings,
+  DefenseRatings,
+} from '../../api/collections';
 
 function getLatestRating(playerId, collection) {
   const rating = collection.findOne({ player_id: playerId }, { sort: { date_time: -1 } });
