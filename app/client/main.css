@@ -1,0 +1,151 @@
+/* ScoreKeeper - Sidebar Layout */
+
+#wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+#sidebar {
+  width: 250px;
+  min-width: 250px;
+  background: #1a1a2e;
+  color: #999;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 1000;
+  transition: transform 0.3s ease;
+}
+
+.sidebar-brand {
+  padding: 20px;
+  font-size: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-brand a {
+  color: #e0e0e0;
+  text-decoration: none;
+}
+
+.sidebar-brand a:hover {
+  color: #fff;
+}
+
+.sidebar-nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav li a {
+  display: block;
+  padding: 12px 20px;
+  color: #999;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.sidebar-nav li a:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-nav li a.router-link-active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+  border-left: 3px solid #4a90d9;
+}
+
+/* Page Content */
+#page-content {
+  flex: 1;
+  margin-left: 250px;
+  min-width: 0;
+}
+
+.content-header {
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.content-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  display: inline-block;
+}
+
+.content-header h1 small {
+  font-size: 0.6em;
+}
+
+.content-body {
+  padding: 0 20px 20px;
+}
+
+#menu-toggle {
+  display: none;
+}
+
+/* Sidebar overlay (mobile) */
+.sidebar-overlay {
+  display: none;
+}
+
+/* Sortable table headers */
+th[role="button"] {
+  cursor: pointer;
+  user-select: none;
+}
+
+th[role="button"]:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Chart containers */
+.chart-container {
+  background: #fff;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  #sidebar {
+    transform: translateX(-100%);
+  }
+
+  #wrapper.sidebar-open #sidebar {
+    transform: translateX(0);
+  }
+
+  #page-content {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  #menu-toggle {
+    display: inline-block;
+  }
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+
+  .content-body {
+    padding: 0 15px 15px;
+  }
+}
