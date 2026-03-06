@@ -1,4 +1,5 @@
-FROM node:20-slim AS build
+# Meteor 3.1 bundles Node.js 22 — the runtime image must match
+FROM node:22-slim AS build
 
 RUN apt-get update && apt-get install -y curl python3 build-essential git && \
     rm -rf /var/lib/apt/lists/*
@@ -18,7 +19,7 @@ WORKDIR /opt/build/bundle/programs/server
 RUN npm install --production
 
 # Production image
-FROM node:20-slim
+FROM node:22-slim
 
 WORKDIR /opt/app
 COPY --from=build /opt/build/bundle .
