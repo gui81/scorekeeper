@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y curl python3 build-essential git && \
 # Install Meteor 3
 RUN curl https://install.meteor.com/ | sh
 ENV PATH="/root/.meteor:${PATH}"
+ENV METEOR_ALLOW_SUPERUSER=1
 
 WORKDIR /app
 COPY package.json .
