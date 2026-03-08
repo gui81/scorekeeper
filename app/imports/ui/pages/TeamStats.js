@@ -1,14 +1,23 @@
 import { defineComponent, ref, computed } from 'vue';
 import { useTracker, useSubscribe } from '../composables';
-import { Players, Matches } from '../../api/collections';
+import { Players, Matches, TeamRatings } from '../../api/collections';
+
+function getLatestTeamRating(offenseId, defenseId) {
+  const rating = TeamRatings.findOne(
+    { offense_id: offenseId, defense_id: defenseId },
+    { sort: { date_time: -1 } },
+  );
+  return rating ? Math.round(rating.rating) : 'N/A';
+}
 
 export default defineComponent({
   name: 'TeamStats',
   setup() {
     useSubscribe('matches');
     useSubscribe('players');
+    useSubscribe('team_ratings');
 
-    const sortColumn = ref('percent');
+    const sortColumn = ref('rating');
     const sortAsc = ref(false);
     const currentPage = ref(1);
     const perPage = 10;
@@ -48,6 +57,7 @@ export default defineComponent({
           wins: t.wins,
           losses: t.losses,
           percent: total > 0 ? Math.round((t.wins / total) * 100) : 0,
+          rating: getLatestTeamRating(t.oId, t.dId),
         });
       }
 
@@ -60,11 +70,13 @@ export default defineComponent({
       const data = [...stats.value];
 
       data.sort((a, b) => {
-        const aVal = a[col];
-        const bVal = b[col];
-        if (typeof aVal === 'string') {
+        let aVal = a[col];
+        let bVal = b[col];
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
           return asc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
         }
+        if (aVal === 'N/A') aVal = -Infinity;
+        if (bVal === 'N/A') bVal = -Infinity;
         return asc ? aVal - bVal : bVal - aVal;
       });
 
@@ -98,17 +110,18 @@ export default defineComponent({
   template: `
     <div class="container">
       <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-10">
           <h2 class="text-center mb-3">Team Stats</h2>
           <div class="table-responsive">
             <table class="table table-striped table-hover">
               <thead>
                 <tr>
-                  <th role="button" @click="toggleSort('offPlayer')">Off Player{{ sortIndicator('offPlayer') }}</th>
-                  <th role="button" @click="toggleSort('defPlayer')">Def Player{{ sortIndicator('defPlayer') }}</th>
+                  <th role="button" @click="toggleSort('offPlayer')">Offense{{ sortIndicator('offPlayer') }}</th>
+                  <th role="button" @click="toggleSort('defPlayer')">Defense{{ sortIndicator('defPlayer') }}</th>
                   <th role="button" class="d-none d-md-table-cell" @click="toggleSort('wins')">Wins{{ sortIndicator('wins') }}</th>
                   <th role="button" class="d-none d-md-table-cell" @click="toggleSort('losses')">Losses{{ sortIndicator('losses') }}</th>
-                  <th role="button" @click="toggleSort('percent')">Win %{{ sortIndicator('percent') }}</th>
+                  <th role="button" class="d-none d-md-table-cell" @click="toggleSort('percent')">Win %{{ sortIndicator('percent') }}</th>
+                  <th role="button" @click="toggleSort('rating')">Rating{{ sortIndicator('rating') }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -117,10 +130,11 @@ export default defineComponent({
                   <td>{{ t.defPlayer }}</td>
                   <td class="d-none d-md-table-cell">{{ t.wins }}</td>
                   <td class="d-none d-md-table-cell">{{ t.losses }}</td>
-                  <td>{{ t.percent }}%</td>
+                  <td class="d-none d-md-table-cell">{{ t.percent }}%</td>
+                  <td>{{ t.rating }}</td>
                 </tr>
                 <tr v-if="paginatedStats.length === 0">
-                  <td colspan="5" class="text-center text-muted">No team stats available</td>
+                  <td colspan="6" class="text-center text-muted">No team stats available</td>
                 </tr>
               </tbody>
             </table>

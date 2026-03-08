@@ -7,6 +7,7 @@ import {
   SinglesRatings,
   OffenseRatings,
   DefenseRatings,
+  TeamRatings,
 } from './collections';
 
 // Bonzini USA Elo rating constants
@@ -48,6 +49,31 @@ async function getPlayerId(playerName) {
 async function getPlayerName(playerId) {
   const player = await Players.findOneAsync({ _id: playerId });
   return player ? player.name : undefined;
+}
+
+const INITIAL_TEAM_RATING = 1250;
+
+async function getLastTeamRating(offenseId, defenseId) {
+  const rating = await TeamRatings.findOneAsync(
+    { offense_id: offenseId, defense_id: defenseId },
+    { sort: { date_time: -1 } },
+  );
+  return rating || { rating: INITIAL_TEAM_RATING };
+}
+
+async function updateTeamRating(date, offenseId, defenseId, teamRating, opponentRating, currentRating, win) {
+  const S = win ? 1 : 0;
+  const We = winExpectancy(teamRating, opponentRating);
+  const Rn = currentRating + K_RATING_COEFFICIENT * (S - We);
+
+  await TeamRatings.insertAsync({
+    date_time: date,
+    offense_id: offenseId,
+    defense_id: defenseId,
+    rating: Rn,
+  });
+
+  return Rn;
 }
 
 async function update2v2Ratings(rv) {
@@ -129,6 +155,12 @@ async function update2v2Ratings(rv) {
     !rv.redWon,
     DefenseRatings,
   );
+
+  // Team ratings
+  const lastRedTeam = await getLastTeamRating(rv.roId, rv.rdId);
+  const lastBlueTeam = await getLastTeamRating(rv.boId, rv.bdId);
+  await updateTeamRating(rv.date, rv.roId, rv.rdId, lastRedTeam.rating, lastBlueTeam.rating, lastRedTeam.rating, rv.redWon);
+  await updateTeamRating(rv.date, rv.boId, rv.bdId, lastBlueTeam.rating, lastRedTeam.rating, lastBlueTeam.rating, !rv.redWon);
 }
 
 async function update1v1Ratings(rv) {
@@ -239,6 +271,10 @@ async function update2v1Ratings(doc, rv) {
       !rv.redWon,
       SinglesRatings,
     );
+
+    // Team rating for the 2-player side
+    const lastRedTeam = await getLastTeamRating(rv.roId, rv.rdId);
+    await updateTeamRating(rv.date, rv.roId, rv.rdId, lastRedTeam.rating, rv.lastBoCombined.rating, lastRedTeam.rating, rv.redWon);
   } else {
     // 1 red v 2 blue
     const blueRating = (rv.lastBoCombined.rating + rv.lastBdCombined.rating) / 1.5;
@@ -302,6 +338,10 @@ async function update2v1Ratings(doc, rv) {
       !rv.redWon,
       DefenseRatings,
     );
+
+    // Team rating for the 2-player side
+    const lastBlueTeam = await getLastTeamRating(rv.boId, rv.bdId);
+    await updateTeamRating(rv.date, rv.boId, rv.bdId, lastBlueTeam.rating, rv.lastRoCombined.rating, lastBlueTeam.rating, !rv.redWon);
   }
 }
 
@@ -474,6 +514,7 @@ if (Meteor.isServer) {
       await SinglesRatings.removeAsync({});
       await OffenseRatings.removeAsync({});
       await DefenseRatings.removeAsync({});
+      await TeamRatings.removeAsync({});
 
       const INITIAL_RATING = 1250;
       const players = await Players.find({}, { sort: { date_time: 1 } }).fetchAsync();

@@ -6,6 +6,7 @@ import {
   SinglesRatings,
   OffenseRatings,
   DefenseRatings,
+  TeamRatings,
 } from './collections';
 
 Meteor.publish('matches', function () {
@@ -30,4 +31,8 @@ Meteor.publish('offense_ratings', function () {
 
 Meteor.publish('defense_ratings', function () {
   return DefenseRatings.find();
+});
+
+Meteor.publish('team_ratings', function () {
+  return TeamRatings.find();
 });

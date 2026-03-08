@@ -1,10 +1,6 @@
-// Import the full Vue build (includes template compiler) so that
-// component template strings are compiled at runtime.
-// This side-effect import registers the compiler with @vue/runtime-dom,
-// making it available to all components imported from 'vue' as well.
-import 'vue/dist/vue.esm-bundler.js';
-
-import { createApp } from 'vue';
+// Import createApp from the full Vue build (includes template compiler)
+// so that component template strings are compiled at runtime.
+import { createApp } from 'vue/dist/vue.esm-bundler.js';
 import App from '../imports/ui/App.js';
 import router from '../imports/ui/router.js';
 

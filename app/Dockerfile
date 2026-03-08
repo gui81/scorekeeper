@@ -14,10 +14,10 @@ COPY package.json .
 RUN meteor npm install
 
 COPY . .
-RUN meteor build --directory /opt/build --server-only
+RUN meteor build --directory /opt/build
 
 WORKDIR /opt/build/bundle/programs/server
-RUN npm install --production
+RUN npm install --omit=dev
 
 # Production image
 FROM node:22-slim
