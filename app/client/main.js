@@ -9,6 +9,7 @@ import './main.css';
 
 // Import collections on the client so minimongo is set up
 import '../imports/api/collections';
+import '../imports/api/organizations';
 
 const app = createApp(App);
 app.use(router);

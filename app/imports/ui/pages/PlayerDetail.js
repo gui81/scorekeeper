@@ -1,5 +1,5 @@
-import { defineComponent, ref, computed, onUnmounted, watch } from 'vue';
-import { useTracker, useSubscribe } from '../composables';
+import { defineComponent, ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { useTracker, useSubscribe, useActiveOrg } from '../composables';
 import {
   Players,
   Matches,
@@ -316,15 +316,22 @@ export default defineComponent({
     id: { type: String, required: true },
   },
   setup(props) {
-    useSubscribe('matches');
-    useSubscribe('players');
-    useSubscribe('combined_ratings');
-    useSubscribe('singles_ratings');
-    useSubscribe('offense_ratings');
-    useSubscribe('defense_ratings');
+    const { activeOrgId } = useActiveOrg();
+
+    const matchesReady = useSubscribe('matches', activeOrgId.value);
+    const playersReady = useSubscribe('players', activeOrgId.value);
+    const combinedReady = useSubscribe('combined_ratings', activeOrgId.value);
+    const singlesReady = useSubscribe('singles_ratings', activeOrgId.value);
+    const offenseReady = useSubscribe('offense_ratings', activeOrgId.value);
+    const defenseReady = useSubscribe('defense_ratings', activeOrgId.value);
 
     const chartCanvas = ref(null);
     let chartInstance = null;
+    const mounted = ref(false);
+
+    onMounted(() => {
+      mounted.value = true;
+    });
 
     const h2hSortCol = ref('pct');
     const h2hSortAsc = ref(false);
@@ -384,6 +391,14 @@ export default defineComponent({
           plugins: {
             title: { display: true, text: 'Rating History', font: { size: 16 } },
             legend: { position: 'bottom' },
+            tooltip: {
+              callbacks: {
+                title(items) {
+                  if (!items.length) return '';
+                  return new Date(items[0].parsed.x).toLocaleString();
+                },
+              },
+            },
           },
           scales: {
             x: {
@@ -404,10 +419,29 @@ export default defineComponent({
       });
     }
 
+    // Build chart when subscriptions are ready and DOM is mounted
+    watch(
+      [
+        mounted,
+        matchesReady,
+        playersReady,
+        combinedReady,
+        singlesReady,
+        offenseReady,
+        defenseReady,
+      ],
+      ([m, mr, p, c, s, o, d]) => {
+        if (m && mr && p && c && s && o && d && chartCanvas.value && player.value) {
+          buildChart();
+        }
+      },
+    );
+
+    // Also rebuild when stats change (e.g. new match added)
     watch(
       stats,
       () => {
-        if (chartCanvas.value && stats.value) buildChart();
+        if (mounted.value && chartCanvas.value && stats.value) buildChart();
       },
       { deep: true },
     );

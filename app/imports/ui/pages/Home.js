@@ -1,6 +1,6 @@
-import { defineComponent, ref, onUnmounted, watch } from 'vue';
+import { defineComponent, ref, onMounted, onUnmounted, watch } from 'vue';
 import { Chart, registerables } from 'chart.js';
-import { useTracker, useSubscribe } from '../composables';
+import { useTracker, useSubscribe, useActiveOrg } from '../composables';
 import {
   Players,
   CombinedRatings,
@@ -11,8 +11,8 @@ import {
 
 Chart.register(...registerables);
 
-function getChartData(collection) {
-  const players = Players.find({}).fetch();
+function getChartData(collection, orgId) {
+  const players = Players.find({ org_id: orgId }).fetch();
   const playerRatings = [];
 
   players.forEach((player) => {
@@ -25,13 +25,11 @@ function getChartData(collection) {
   playerRatings.sort((a, b) => b.rating - a.rating);
   playerRatings.length = Math.min(playerRatings.length, 10);
 
-  const labels = new Set();
   const datasets = [];
 
   playerRatings.forEach((pr) => {
     const ratings = collection.find({ player_id: pr.playerId }, { sort: { date_time: 1 } }).fetch();
     const data = ratings.map((r) => ({ x: r.date_time, y: r.rating }));
-    data.forEach((d) => labels.add(d.x));
     datasets.push({
       label: pr.playerName,
       data,
@@ -43,8 +41,8 @@ function getChartData(collection) {
   return { datasets };
 }
 
-function createChart(canvas, collection, title) {
-  const data = getChartData(collection);
+function createChart(canvas, collection, title, orgId) {
+  const data = getChartData(collection, orgId);
   return new Chart(canvas, {
     type: 'line',
     data,
@@ -54,6 +52,14 @@ function createChart(canvas, collection, title) {
       plugins: {
         title: { display: true, text: title, font: { size: 16 } },
         legend: { position: 'bottom' },
+        tooltip: {
+          callbacks: {
+            title(items) {
+              if (!items.length) return '';
+              return new Date(items[0].parsed.x).toLocaleString();
+            },
+          },
+        },
       },
       scales: {
         x: {
@@ -77,11 +83,13 @@ function createChart(canvas, collection, title) {
 export default defineComponent({
   name: 'Home',
   setup() {
-    useSubscribe('players');
-    useSubscribe('combined_ratings');
-    useSubscribe('singles_ratings');
-    useSubscribe('offense_ratings');
-    useSubscribe('defense_ratings');
+    const { activeOrgId } = useActiveOrg();
+
+    const playersReady = useSubscribe('players', activeOrgId.value);
+    const combinedReady = useSubscribe('combined_ratings', activeOrgId.value);
+    const singlesReady = useSubscribe('singles_ratings', activeOrgId.value);
+    const offenseReady = useSubscribe('offense_ratings', activeOrgId.value);
+    const defenseReady = useSubscribe('defense_ratings', activeOrgId.value);
 
     const combinedCanvas = ref(null);
     const singlesCanvas = ref(null);
@@ -89,43 +97,73 @@ export default defineComponent({
     const defenseCanvas = ref(null);
 
     const charts = [];
-
-    // Use a tracker to detect when data changes
-    const dataVersion = useTracker(() => {
-      return {
-        players: Players.find({}).count(),
-        combined: CombinedRatings.find({}).count(),
-        singles: SinglesRatings.find({}).count(),
-        offense: OffenseRatings.find({}).count(),
-        defense: DefenseRatings.find({}).count(),
-      };
-    });
+    const mounted = ref(false);
 
     function buildCharts() {
-      // Destroy existing charts
       charts.forEach((c) => c.destroy());
       charts.length = 0;
 
       if (combinedCanvas.value) {
-        charts.push(createChart(combinedCanvas.value, CombinedRatings, 'Combined Rating'));
+        charts.push(
+          createChart(combinedCanvas.value, CombinedRatings, 'Combined Rating', activeOrgId.value),
+        );
       }
       if (singlesCanvas.value) {
-        charts.push(createChart(singlesCanvas.value, SinglesRatings, 'Singles Rating'));
+        charts.push(
+          createChart(singlesCanvas.value, SinglesRatings, 'Singles Rating', activeOrgId.value),
+        );
       }
       if (offenseCanvas.value) {
-        charts.push(createChart(offenseCanvas.value, OffenseRatings, 'Doubles Offense Rating'));
+        charts.push(
+          createChart(
+            offenseCanvas.value,
+            OffenseRatings,
+            'Doubles Offense Rating',
+            activeOrgId.value,
+          ),
+        );
       }
       if (defenseCanvas.value) {
-        charts.push(createChart(defenseCanvas.value, DefenseRatings, 'Doubles Defense Rating'));
+        charts.push(
+          createChart(
+            defenseCanvas.value,
+            DefenseRatings,
+            'Doubles Defense Rating',
+            activeOrgId.value,
+          ),
+        );
       }
     }
+
+    onMounted(() => {
+      mounted.value = true;
+    });
+
+    // Build charts when subscriptions are ready and DOM is mounted
+    watch(
+      [mounted, playersReady, combinedReady, singlesReady, offenseReady, defenseReady],
+      ([m, p, c, s, o, d]) => {
+        if (m && p && c && s && o && d) {
+          buildCharts();
+        }
+      },
+    );
+
+    // Also rebuild when underlying data changes (e.g. new match added)
+    const dataVersion = useTracker(() => {
+      const playerIds = Players.find({ org_id: activeOrgId.value })
+        .fetch()
+        .map((p) => p._id);
+      return {
+        players: playerIds.length,
+        combined: CombinedRatings.find({ player_id: { $in: playerIds } }).count(),
+      };
+    });
 
     watch(
       dataVersion,
       () => {
-        if (combinedCanvas.value) {
-          buildCharts();
-        }
+        if (mounted.value) buildCharts();
       },
       { deep: true },
     );

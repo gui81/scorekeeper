@@ -1,13 +1,15 @@
 import { Meteor } from 'meteor/meteor';
 import { defineComponent, ref } from 'vue';
-import { useTracker, useSubscribe } from '../composables';
+import { useTracker, useSubscribe, useActiveOrg } from '../composables';
 import { Players, Matches } from '../../api/collections';
 
 export default defineComponent({
   name: 'AddMatch',
   setup() {
-    useSubscribe('players');
-    useSubscribe('matches');
+    const { activeOrgId } = useActiveOrg();
+
+    useSubscribe('players', activeOrgId.value);
+    useSubscribe('matches', activeOrgId.value);
 
     const ro = ref('');
     const rd = ref('');
@@ -19,13 +21,13 @@ export default defineComponent({
     const successMsg = ref('');
 
     const playerNames = useTracker(() => {
-      return Players.find({})
+      return Players.find({ org_id: activeOrgId.value })
         .fetch()
         .map((p) => p.name);
     });
 
     const winStats = useTracker(() => {
-      const matches = Matches.find({}).fetch();
+      const matches = Matches.find({ org_id: activeOrgId.value }).fetch();
       let redSinglesWins = 0;
       let redDoublesWins = 0;
       let blueSinglesWins = 0;
@@ -45,7 +47,7 @@ export default defineComponent({
     });
 
     const recentMatches = useTracker(() => {
-      return Matches.find({}, { sort: { date_time: -1 }, limit: 10 })
+      return Matches.find({ org_id: activeOrgId.value }, { sort: { date_time: -1 }, limit: 10 })
         .fetch()
         .map((m) => {
           const findPlayer = (id) => {
@@ -97,7 +99,7 @@ export default defineComponent({
         return;
       }
 
-      const doc = { ro: ro.value, bo: bo.value, rs: scoreR, bs: scoreB };
+      const doc = { ro: ro.value, bo: bo.value, rs: scoreR, bs: scoreB, org_id: activeOrgId.value };
       if (rd.value) doc.rd = rd.value;
       if (bd.value) doc.bd = bd.value;
 

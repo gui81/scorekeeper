@@ -1,5 +1,5 @@
 import { defineComponent, ref, computed } from 'vue';
-import { useTracker, useSubscribe } from '../composables';
+import { useTracker, useSubscribe, useActiveOrg } from '../composables';
 import {
   Players,
   Matches,
@@ -17,12 +17,14 @@ function getLatestRating(playerId, collection) {
 export default defineComponent({
   name: 'IndividualStats',
   setup() {
-    useSubscribe('matches');
-    useSubscribe('players');
-    useSubscribe('combined_ratings');
-    useSubscribe('singles_ratings');
-    useSubscribe('offense_ratings');
-    useSubscribe('defense_ratings');
+    const { activeOrgId } = useActiveOrg();
+
+    useSubscribe('matches', activeOrgId.value);
+    useSubscribe('players', activeOrgId.value);
+    useSubscribe('combined_ratings', activeOrgId.value);
+    useSubscribe('singles_ratings', activeOrgId.value);
+    useSubscribe('offense_ratings', activeOrgId.value);
+    useSubscribe('defense_ratings', activeOrgId.value);
 
     const sortColumn = ref('combined');
     const sortAsc = ref(false);
@@ -30,7 +32,7 @@ export default defineComponent({
     const perPage = 10;
 
     const stats = useTracker(() => {
-      const matches = Matches.find({}).fetch();
+      const matches = Matches.find({ org_id: activeOrgId.value }).fetch();
       const players = {};
 
       matches.forEach((match) => {

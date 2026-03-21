@@ -9,6 +9,21 @@ import {
   DefenseRatings,
   TeamRatings,
 } from './collections';
+import { OrganizationMembers } from './organizations';
+
+async function requireOrgMember(orgId) {
+  if (!Meteor.userId()) {
+    throw new Meteor.Error('not-authorized', 'You must be logged in');
+  }
+  const member = await OrganizationMembers.findOneAsync({
+    org_id: orgId,
+    user_id: Meteor.userId(),
+  });
+  if (!member) {
+    throw new Meteor.Error('not-authorized', 'You are not a member of this organization');
+  }
+  return member;
+}
 
 // Bonzini USA Elo rating constants
 // http://www.bonziniusa.com/foosball/tournament/TournamentRankingSystem.html
@@ -41,8 +56,10 @@ async function updateRating(
   return Rn;
 }
 
-async function getPlayerId(playerName) {
-  const player = await Players.findOneAsync({ name: playerName });
+async function getPlayerId(playerName, orgId) {
+  const query = { name: playerName };
+  if (orgId) query.org_id = orgId;
+  const player = await Players.findOneAsync(query);
   return player ? player._id : undefined;
 }
 
@@ -61,7 +78,15 @@ async function getLastTeamRating(offenseId, defenseId) {
   return rating || { rating: INITIAL_TEAM_RATING };
 }
 
-async function updateTeamRating(date, offenseId, defenseId, teamRating, opponentRating, currentRating, win) {
+async function updateTeamRating(
+  date,
+  offenseId,
+  defenseId,
+  teamRating,
+  opponentRating,
+  currentRating,
+  win,
+) {
   const S = win ? 1 : 0;
   const We = winExpectancy(teamRating, opponentRating);
   const Rn = currentRating + K_RATING_COEFFICIENT * (S - We);
@@ -159,8 +184,24 @@ async function update2v2Ratings(rv) {
   // Team ratings
   const lastRedTeam = await getLastTeamRating(rv.roId, rv.rdId);
   const lastBlueTeam = await getLastTeamRating(rv.boId, rv.bdId);
-  await updateTeamRating(rv.date, rv.roId, rv.rdId, lastRedTeam.rating, lastBlueTeam.rating, lastRedTeam.rating, rv.redWon);
-  await updateTeamRating(rv.date, rv.boId, rv.bdId, lastBlueTeam.rating, lastRedTeam.rating, lastBlueTeam.rating, !rv.redWon);
+  await updateTeamRating(
+    rv.date,
+    rv.roId,
+    rv.rdId,
+    lastRedTeam.rating,
+    lastBlueTeam.rating,
+    lastRedTeam.rating,
+    rv.redWon,
+  );
+  await updateTeamRating(
+    rv.date,
+    rv.boId,
+    rv.bdId,
+    lastBlueTeam.rating,
+    lastRedTeam.rating,
+    lastBlueTeam.rating,
+    !rv.redWon,
+  );
 }
 
 async function update1v1Ratings(rv) {
@@ -274,7 +315,15 @@ async function update2v1Ratings(doc, rv) {
 
     // Team rating for the 2-player side
     const lastRedTeam = await getLastTeamRating(rv.roId, rv.rdId);
-    await updateTeamRating(rv.date, rv.roId, rv.rdId, lastRedTeam.rating, rv.lastBoCombined.rating, lastRedTeam.rating, rv.redWon);
+    await updateTeamRating(
+      rv.date,
+      rv.roId,
+      rv.rdId,
+      lastRedTeam.rating,
+      rv.lastBoCombined.rating,
+      lastRedTeam.rating,
+      rv.redWon,
+    );
   } else {
     // 1 red v 2 blue
     const blueRating = (rv.lastBoCombined.rating + rv.lastBdCombined.rating) / 1.5;
@@ -341,7 +390,15 @@ async function update2v1Ratings(doc, rv) {
 
     // Team rating for the 2-player side
     const lastBlueTeam = await getLastTeamRating(rv.boId, rv.bdId);
-    await updateTeamRating(rv.date, rv.boId, rv.bdId, lastBlueTeam.rating, rv.lastRoCombined.rating, lastBlueTeam.rating, !rv.redWon);
+    await updateTeamRating(
+      rv.date,
+      rv.boId,
+      rv.bdId,
+      lastBlueTeam.rating,
+      rv.lastRoCombined.rating,
+      lastBlueTeam.rating,
+      !rv.redWon,
+    );
   }
 }
 
@@ -354,7 +411,7 @@ async function updateAllRatings(doc, date) {
   const rv = { date, redWon: parseInt(doc.rs) > parseInt(doc.bs) };
 
   if (typeof doc.ro !== 'undefined') {
-    rv.roId = await getPlayerId(doc.ro);
+    rv.roId = await getPlayerId(doc.ro, doc.org_id);
     rv.lastRoCombined = await CombinedRatings.findOneAsync(
       { player_id: rv.roId },
       { sort: { date_time: -1 } },
@@ -369,7 +426,7 @@ async function updateAllRatings(doc, date) {
     );
   }
   if (typeof doc.rd !== 'undefined') {
-    rv.rdId = await getPlayerId(doc.rd);
+    rv.rdId = await getPlayerId(doc.rd, doc.org_id);
     rv.lastRdCombined = await CombinedRatings.findOneAsync(
       { player_id: rv.rdId },
       { sort: { date_time: -1 } },
@@ -380,7 +437,7 @@ async function updateAllRatings(doc, date) {
     );
   }
   if (typeof doc.bo !== 'undefined') {
-    rv.boId = await getPlayerId(doc.bo);
+    rv.boId = await getPlayerId(doc.bo, doc.org_id);
     rv.lastBoCombined = await CombinedRatings.findOneAsync(
       { player_id: rv.boId },
       { sort: { date_time: -1 } },
@@ -395,7 +452,7 @@ async function updateAllRatings(doc, date) {
     );
   }
   if (typeof doc.bd !== 'undefined') {
-    rv.bdId = await getPlayerId(doc.bd);
+    rv.bdId = await getPlayerId(doc.bd, doc.org_id);
     rv.lastBdCombined = await CombinedRatings.findOneAsync(
       { player_id: rv.bdId },
       { sort: { date_time: -1 } },
@@ -415,16 +472,22 @@ async function updateAllRatings(doc, date) {
   }
 }
 
-async function addPlayer(playerName, rating) {
-  const existing = await Players.findOneAsync({ name: playerName });
+async function addPlayer(playerName, rating, orgId, userId) {
+  const existing = await Players.findOneAsync({ name: playerName, org_id: orgId });
   if (existing) {
     return existing._id;
   }
 
-  const id = await Players.insertAsync({
+  const doc = {
     date_time: Date.now(),
     name: playerName,
-  });
+    org_id: orgId,
+  };
+  if (userId) {
+    doc.user_id = userId;
+  }
+
+  const id = await Players.insertAsync(doc);
 
   const initRating = { date_time: Date.now(), player_id: id, rating };
   await CombinedRatings.insertAsync({ ...initRating });
@@ -435,11 +498,13 @@ async function addPlayer(playerName, rating) {
   return id;
 }
 
-async function insertMatch(doc) {
-  const roId = typeof doc.ro !== 'undefined' ? await getPlayerId(doc.ro) : undefined;
-  const rdId = typeof doc.rd !== 'undefined' ? await getPlayerId(doc.rd) : undefined;
-  const boId = typeof doc.bo !== 'undefined' ? await getPlayerId(doc.bo) : undefined;
-  const bdId = typeof doc.bd !== 'undefined' ? await getPlayerId(doc.bd) : undefined;
+export { addPlayer };
+
+async function insertMatch(doc, orgId) {
+  const roId = typeof doc.ro !== 'undefined' ? await getPlayerId(doc.ro, orgId) : undefined;
+  const rdId = typeof doc.rd !== 'undefined' ? await getPlayerId(doc.rd, orgId) : undefined;
+  const boId = typeof doc.bo !== 'undefined' ? await getPlayerId(doc.bo, orgId) : undefined;
+  const bdId = typeof doc.bd !== 'undefined' ? await getPlayerId(doc.bd, orgId) : undefined;
 
   await Matches.insertAsync({
     date_time: Date.now(),
@@ -449,6 +514,7 @@ async function insertMatch(doc) {
     bd_id: bdId,
     rs: doc.rs,
     bs: doc.bs,
+    org_id: orgId,
   });
 }
 
@@ -460,47 +526,51 @@ const matchPattern = {
   bd: Match.Optional(String),
   rs: Match.Integer,
   bs: Match.Integer,
+  org_id: String,
 };
 
 const playerPattern = {
   playername: String,
   rating: Match.Where((x) => [250, 750, 1250, 1750, 2250].includes(x)),
+  org_id: String,
 };
 
 Meteor.methods({
   async add_match(doc) {
     check(doc, matchPattern);
+    await requireOrgMember(doc.org_id);
 
     if (doc.rs < 0 || doc.rs > 10 || doc.bs < 0 || doc.bs > 10) {
       throw new Meteor.Error('invalid-score', 'Scores must be between 0 and 10');
     }
 
-    // Verify players exist
-    const roPlayer = await Players.findOneAsync({ name: doc.ro });
+    // Verify players exist within the organization
+    const roPlayer = await Players.findOneAsync({ name: doc.ro, org_id: doc.org_id });
     if (!roPlayer) throw new Meteor.Error('player-not-found', `Player "${doc.ro}" not found`);
-    const boPlayer = await Players.findOneAsync({ name: doc.bo });
+    const boPlayer = await Players.findOneAsync({ name: doc.bo, org_id: doc.org_id });
     if (!boPlayer) throw new Meteor.Error('player-not-found', `Player "${doc.bo}" not found`);
     if (doc.rd) {
-      const rdPlayer = await Players.findOneAsync({ name: doc.rd });
+      const rdPlayer = await Players.findOneAsync({ name: doc.rd, org_id: doc.org_id });
       if (!rdPlayer) throw new Meteor.Error('player-not-found', `Player "${doc.rd}" not found`);
     }
     if (doc.bd) {
-      const bdPlayer = await Players.findOneAsync({ name: doc.bd });
+      const bdPlayer = await Players.findOneAsync({ name: doc.bd, org_id: doc.org_id });
       if (!bdPlayer) throw new Meteor.Error('player-not-found', `Player "${doc.bd}" not found`);
     }
 
-    await insertMatch(doc);
+    await insertMatch(doc, doc.org_id);
     await updateAllRatings(doc, Date.now());
   },
 
   async add_player(doc) {
     check(doc, playerPattern);
+    await requireOrgMember(doc.org_id);
 
     if (doc.playername.length < 2) {
       throw new Meteor.Error('invalid-name', 'Player name must be at least 2 characters');
     }
 
-    await addPlayer(doc.playername, doc.rating);
+    await addPlayer(doc.playername, doc.rating, doc.org_id);
   },
 });
 

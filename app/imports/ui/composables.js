@@ -39,3 +39,35 @@ export function useSubscribe(...args) {
 
   return isReady;
 }
+
+/**
+ * Reactive current user.
+ */
+export function useUser() {
+  return useTracker(() => Meteor.user());
+}
+
+/**
+ * Reactive user ID.
+ */
+export function useUserId() {
+  return useTracker(() => Meteor.userId());
+}
+
+// Active organization stored in localStorage for persistence across page reloads
+const ACTIVE_ORG_KEY = 'scorekeeper_active_org';
+
+const activeOrgId = ref(localStorage.getItem(ACTIVE_ORG_KEY) || null);
+
+export function useActiveOrg() {
+  function setActiveOrg(orgId) {
+    activeOrgId.value = orgId;
+    if (orgId) {
+      localStorage.setItem(ACTIVE_ORG_KEY, orgId);
+    } else {
+      localStorage.removeItem(ACTIVE_ORG_KEY);
+    }
+  }
+
+  return { activeOrgId, setActiveOrg };
+}

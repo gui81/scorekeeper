@@ -18,6 +18,8 @@
   overflow-y: auto;
   z-index: 1000;
   transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-brand {
@@ -113,6 +115,128 @@ th[role='button']:hover {
   border-radius: 8px;
   padding: 15px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Login page */
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f0f2f5;
+}
+
+.login-card {
+  background: #fff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+/* No-org wrapper */
+#no-org-wrapper {
+  min-height: 100vh;
+}
+
+#no-org-wrapper .content-header {
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+#no-org-wrapper .content-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+#no-org-wrapper .content-header h1 small {
+  font-size: 0.6em;
+}
+
+/* Sidebar org selector */
+.sidebar-org {
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.sidebar-nav-bottom {
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Avatar menu */
+.avatar-menu-wrapper {
+  position: relative;
+}
+
+.avatar-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  background: #4a90d9;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.avatar-btn:hover {
+  border-color: #4a90d9;
+  box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.3);
+}
+
+.avatar-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 220px;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  z-index: 1100;
+  padding: 6px 0;
+}
+
+.avatar-dropdown-header {
+  padding: 10px 14px;
+}
+
+.avatar-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 8px 14px;
+  border: none;
+  background: none;
+  text-align: left;
+  color: #212529;
+  text-decoration: none;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.avatar-dropdown-item:hover {
+  background: #f0f2f5;
+  color: #212529;
+}
+
+.avatar-menu-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1050;
 }
 
 /* Responsive */

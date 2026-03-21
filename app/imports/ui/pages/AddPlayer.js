@@ -1,13 +1,25 @@
 import { Meteor } from 'meteor/meteor';
-import { defineComponent, ref } from 'vue';
-import { useTracker, useSubscribe } from '../composables';
+import { defineComponent, ref, onUnmounted } from 'vue';
+import { useTracker, useSubscribe, useActiveOrg } from '../composables';
 import { Players, CombinedRatings } from '../../api/collections';
 
 export default defineComponent({
   name: 'AddPlayer',
   setup() {
-    useSubscribe('players');
-    useSubscribe('combined_ratings');
+    const { activeOrgId } = useActiveOrg();
+
+    useSubscribe('players', activeOrgId.value);
+
+    // Manage combined_ratings subscription manually so we can refresh after adding a player
+    let ratingsSubHandle = Meteor.subscribe('combined_ratings', activeOrgId.value);
+    onUnmounted(() => {
+      if (ratingsSubHandle) ratingsSubHandle.stop();
+    });
+
+    function refreshRatings() {
+      if (ratingsSubHandle) ratingsSubHandle.stop();
+      ratingsSubHandle = Meteor.subscribe('combined_ratings', activeOrgId.value);
+    }
 
     const playerName = ref('');
     const rating = ref(1250);
@@ -23,7 +35,7 @@ export default defineComponent({
     ];
 
     const recentPlayers = useTracker(() => {
-      return Players.find({}, { sort: { date_time: -1 }, limit: 10 })
+      return Players.find({ org_id: activeOrgId.value }, { sort: { date_time: -1 }, limit: 10 })
         .fetch()
         .map((p) => {
           const eloRating = CombinedRatings.findOne(
@@ -51,10 +63,12 @@ export default defineComponent({
         await Meteor.callAsync('add_player', {
           playername: playerName.value,
           rating: rating.value,
+          org_id: activeOrgId.value,
         });
         successMsg.value = `Player "${playerName.value}" added successfully!`;
         playerName.value = '';
         rating.value = 1250;
+        refreshRatings();
       } catch (err) {
         errorMsg.value = err.reason || err.message;
       }
@@ -66,7 +80,8 @@ export default defineComponent({
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-md-6">
-          <h3 class="text-center mb-3">Add Player</h3>
+          <h3 class="text-center mb-2">Add Guest Player</h3>
+          <p class="text-center text-muted small mb-3">Add a player who doesn't have an account. Members who join via invite code get a player profile automatically.</p>
 
           <div v-if="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
           <div v-if="successMsg" class="alert alert-success">{{ successMsg }}</div>
