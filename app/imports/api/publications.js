@@ -17,18 +17,21 @@ async function requireOrgAccess(userId, orgId) {
 }
 
 Meteor.publish('matches', async function (orgId) {
+  if (!orgId) return this.ready();
   check(orgId, String);
   if (!(await requireOrgAccess(this.userId, orgId))) return this.ready();
   return Matches.find({ org_id: orgId });
 });
 
 Meteor.publish('players', async function (orgId) {
+  if (!orgId) return this.ready();
   check(orgId, String);
   if (!(await requireOrgAccess(this.userId, orgId))) return this.ready();
   return Players.find({ org_id: orgId });
 });
 
 Meteor.publish('combined_ratings', async function (orgId) {
+  if (!orgId) return this.ready();
   check(orgId, String);
   if (!(await requireOrgAccess(this.userId, orgId))) return this.ready();
   const playerIds = (await Players.find({ org_id: orgId }).fetchAsync()).map((p) => p._id);
@@ -36,6 +39,7 @@ Meteor.publish('combined_ratings', async function (orgId) {
 });
 
 Meteor.publish('singles_ratings', async function (orgId) {
+  if (!orgId) return this.ready();
   check(orgId, String);
   if (!(await requireOrgAccess(this.userId, orgId))) return this.ready();
   const playerIds = (await Players.find({ org_id: orgId }).fetchAsync()).map((p) => p._id);
@@ -43,6 +47,7 @@ Meteor.publish('singles_ratings', async function (orgId) {
 });
 
 Meteor.publish('offense_ratings', async function (orgId) {
+  if (!orgId) return this.ready();
   check(orgId, String);
   if (!(await requireOrgAccess(this.userId, orgId))) return this.ready();
   const playerIds = (await Players.find({ org_id: orgId }).fetchAsync()).map((p) => p._id);
@@ -50,6 +55,7 @@ Meteor.publish('offense_ratings', async function (orgId) {
 });
 
 Meteor.publish('defense_ratings', async function (orgId) {
+  if (!orgId) return this.ready();
   check(orgId, String);
   if (!(await requireOrgAccess(this.userId, orgId))) return this.ready();
   const playerIds = (await Players.find({ org_id: orgId }).fetchAsync()).map((p) => p._id);
@@ -57,6 +63,7 @@ Meteor.publish('defense_ratings', async function (orgId) {
 });
 
 Meteor.publish('team_ratings', async function (orgId) {
+  if (!orgId) return this.ready();
   check(orgId, String);
   if (!(await requireOrgAccess(this.userId, orgId))) return this.ready();
   const playerIds = (await Players.find({ org_id: orgId }).fetchAsync()).map((p) => p._id);
