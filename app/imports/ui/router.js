@@ -10,8 +10,28 @@ import Login from './pages/Login.js';
 import OrganizationSelect from './pages/OrganizationSelect.js';
 import ManageOrganization from './pages/ManageOrganization.js';
 import Profile from './pages/Profile.js';
+import { OrganizationMembers } from '../api/organizations';
 
 const ACTIVE_ORG_KEY = 'scorekeeper_active_org';
+
+function autoSelectOrg() {
+  // Try default org from user profile
+  const user = Meteor.user();
+  const defaultOrgId = user?.profile?.default_org_id;
+  if (defaultOrgId) {
+    localStorage.setItem(ACTIVE_ORG_KEY, defaultOrgId);
+    return defaultOrgId;
+  }
+
+  // Fall back to first membership
+  const memberships = OrganizationMembers.find({ user_id: Meteor.userId() }).fetch();
+  if (memberships.length > 0) {
+    localStorage.setItem(ACTIVE_ORG_KEY, memberships[0].org_id);
+    return memberships[0].org_id;
+  }
+
+  return null;
+}
 
 const routes = [
   { path: '/login', name: 'login', component: Login, meta: { public: true } },
@@ -64,15 +84,20 @@ router.beforeEach((to, from, next) => {
     return;
   }
 
-  // Auth-only routes (org selection page) - just need login
+  // Auth-only routes (org selection, profile) - just need login
   if (to.meta.authOnly) {
     next();
     return;
   }
 
-  // All other routes require an active org
+  // All other routes require an active org — try to auto-select one
   if (!activeOrg) {
-    next({ name: 'organizations' });
+    const selected = autoSelectOrg();
+    if (selected) {
+      next();
+    } else {
+      next({ name: 'organizations' });
+    }
     return;
   }
 

@@ -11,7 +11,13 @@ export default defineComponent({
     const sidebarOpen = ref(false);
     const user = useUser();
     const userId = useUserId();
-    const { activeOrgId, setActiveOrg } = useActiveOrg();
+    const { activeOrgId, setActiveOrg, syncFromStorage } = useActiveOrg();
+
+    // Sync activeOrgId from localStorage after each navigation
+    // (handles the case where the router guard auto-selected an org)
+    router.afterEach(() => {
+      syncFromStorage();
+    });
 
     useSubscribe('user_organizations');
 
@@ -149,6 +155,8 @@ export default defineComponent({
             </div>
             <hr class="my-1">
             <router-link to="/profile" class="avatar-dropdown-item" @click="closeAvatarMenu">Profile</router-link>
+            <router-link to="/organizations" class="avatar-dropdown-item" @click="closeAvatarMenu">Organizations</router-link>
+            <hr class="my-1">
             <button class="avatar-dropdown-item" @click="logout">Logout</button>
           </div>
         </div>

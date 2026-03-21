@@ -69,5 +69,13 @@ export function useActiveOrg() {
     }
   }
 
-  return { activeOrgId, setActiveOrg };
+  // Sync from localStorage in case router guard auto-selected an org
+  function syncFromStorage() {
+    const stored = localStorage.getItem(ACTIVE_ORG_KEY);
+    if (stored !== activeOrgId.value) {
+      activeOrgId.value = stored || null;
+    }
+  }
+
+  return { activeOrgId, setActiveOrg, syncFromStorage };
 }

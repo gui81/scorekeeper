@@ -59,6 +59,25 @@ Meteor.methods({
     });
   },
 
+  async set_default_org(doc) {
+    const userId = requireUser();
+    check(doc, { org_id: Match.OneOf(String, null) });
+
+    if (doc.org_id) {
+      const member = await OrganizationMembers.findOneAsync({
+        org_id: doc.org_id,
+        user_id: userId,
+      });
+      if (!member) {
+        throw new Meteor.Error('not-authorized', 'You are not a member of this organization');
+      }
+    }
+
+    await Meteor.users.updateAsync(userId, {
+      $set: { 'profile.default_org_id': doc.org_id },
+    });
+  },
+
   async create_organization(doc) {
     const userId = requireUser();
     check(doc, { name: String });

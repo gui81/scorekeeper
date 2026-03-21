@@ -2,11 +2,14 @@ import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
 import { defineComponent, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useActiveOrg } from '../composables';
+import { OrganizationMembers } from '../../api/organizations';
 
 export default defineComponent({
   name: 'Login',
   setup() {
     const router = useRouter();
+    const { setActiveOrg } = useActiveOrg();
     const displayName = ref('');
     const email = ref('');
     const password = ref('');
@@ -28,6 +31,36 @@ export default defineComponent({
         return 'Incorrect password.';
       }
       return reason || 'Something went wrong. Please try again.';
+    }
+
+    function navigateAfterAuth() {
+      // Wait briefly for the user_organizations subscription to deliver data
+      const user = Meteor.user();
+      const defaultOrgId = user?.profile?.default_org_id;
+
+      // Try to use default org
+      if (defaultOrgId) {
+        setActiveOrg(defaultOrgId);
+        router.push({ name: 'home' });
+        return;
+      }
+
+      // Try to pick the first org the user belongs to
+      // The subscription may not be ready yet, so poll briefly
+      let attempts = 0;
+      const interval = setInterval(() => {
+        const memberships = OrganizationMembers.find({ user_id: Meteor.userId() }).fetch();
+        if (memberships.length > 0) {
+          clearInterval(interval);
+          setActiveOrg(memberships[0].org_id);
+          router.push({ name: 'home' });
+        } else if (attempts >= 10) {
+          clearInterval(interval);
+          // No orgs found — send to org selection page
+          router.push({ name: 'organizations' });
+        }
+        attempts++;
+      }, 200);
     }
 
     function submitEmailPassword() {
@@ -67,6 +100,7 @@ export default defineComponent({
             if (err) {
               errorMsg.value = friendlyError(err);
             } else {
+              // New users have no orgs yet
               router.push({ name: 'organizations' });
             }
           },
@@ -77,7 +111,7 @@ export default defineComponent({
           if (err) {
             errorMsg.value = friendlyError(err);
           } else {
-            router.push({ name: 'organizations' });
+            navigateAfterAuth();
           }
         });
       }
