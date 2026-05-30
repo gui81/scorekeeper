@@ -64,44 +64,35 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to) => {
   const userId = Meteor.userId();
   const activeOrg = localStorage.getItem(ACTIVE_ORG_KEY);
 
   // Public routes (login page)
   if (to.meta.public) {
     if (userId) {
-      next({ name: activeOrg ? 'home' : 'organizations' });
-    } else {
-      next();
+      return { name: activeOrg ? 'home' : 'organizations' };
     }
-    return;
+    return true;
   }
 
   // Not logged in -> go to login
   if (!userId) {
-    next({ name: 'login' });
-    return;
+    return { name: 'login' };
   }
 
   // Auth-only routes (org selection, profile) - just need login
   if (to.meta.authOnly) {
-    next();
-    return;
+    return true;
   }
 
   // All other routes require an active org — try to auto-select one
   if (!activeOrg) {
     const selected = autoSelectOrg();
-    if (selected) {
-      next();
-    } else {
-      next({ name: 'organizations' });
-    }
-    return;
+    return selected ? true : { name: 'organizations' };
   }
 
-  next();
+  return true;
 });
 
 export default router;
