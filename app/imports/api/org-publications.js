@@ -2,9 +2,11 @@ import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
 import { Organizations, OrganizationMembers, OrganizationInvites } from './organizations';
 
-Meteor.publish('organization_by_id', function (orgId) {
+Meteor.publish('organization_by_id', async function (orgId) {
   check(orgId, String);
   if (!this.userId) return this.ready();
+  const member = await OrganizationMembers.findOneAsync({ org_id: orgId, user_id: this.userId });
+  if (!member) return this.ready();
   return Organizations.find({ _id: orgId });
 });
 
