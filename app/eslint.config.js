@@ -24,6 +24,15 @@ export default [
     },
   },
   {
+    // Mocha globals for the test suite (*.tests.js), loaded only under the test driver.
+    files: ['**/*.tests.js'],
+    languageOptions: {
+      globals: {
+        ...globals.mocha,
+      },
+    },
+  },
+  {
     ignores: ['.meteor/', 'node_modules/', 'packages/'],
   },
 ];
