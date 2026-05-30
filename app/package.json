@@ -3,23 +3,27 @@
   "private": true,
   "scripts": {
     "start": "meteor run",
+    "test": "meteor test --once --driver-package meteortesting:mocha",
+    "test-watch": "TEST_WATCH=1 meteor test --driver-package meteortesting:mocha",
     "lint": "eslint . && prettier --check .",
     "lint:fix": "eslint --fix . && prettier --write ."
   },
   "dependencies": {
-    "@babel/runtime": "^7.26.0",
+    "@babel/runtime": "^7.29.7",
     "bootstrap": "^5.3.0",
     "chart.js": "^4.4.0",
     "meteor-node-stubs": "^1.2.13",
-    "vue": "^3.5.0",
-    "vue-router": "^4.5.0"
+    "vue": "^3.5.35",
+    "vue-router": "^5.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",
+    "chai": "^6.2.2",
     "eslint": "^9.25.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-vue": "^9.33.0",
-    "globals": "^17.4.0",
-    "prettier": "^3.8.1"
+    "eslint-plugin-vue": "^10.9.1",
+    "globals": "^17.6.0",
+    "prettier": "^3.8.3",
+    "vue-eslint-parser": "^10.3.0"
   }
 }
