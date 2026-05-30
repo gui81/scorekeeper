@@ -1,0 +1,78 @@
+// ===========================================================================
+// MEMBER ACTION -> add to app/imports/api/methods.js (inside Meteor.methods({}))
+// requireOrgMember is defined in methods.js, so member methods live there.
+// ===========================================================================
+Meteor.methods({
+  // ... existing methods ...
+
+  async <METHOD_NAME>(doc) {
+    // 1. VALIDATE shape first (meteor/check). org_id is always String.
+    check(doc, {
+      org_id: String,
+      // example field patterns already used in-repo:
+      name: String,
+      note: Match.Optional(String),
+      count: Match.Integer,
+      kind: Match.Where((x) => ['singles', 'doubles'].includes(x)),
+      parent_id: Match.OneOf(String, null),
+    });
+
+    // 2. GATE access (membership) BEFORE touching any data.
+    await requireOrgMember(doc.org_id);
+
+    // 3. Business rules + DATA. Server Mongo is ASYNC ONLY, always awaited.
+    const existing = await SomeCollection.findOneAsync({
+      _id: doc.parent_id,
+      org_id: doc.org_id, // re-scope every query to org_id
+    });
+    if (!existing) {
+      throw new Meteor.Error('not-found', 'Not found in this organization');
+    }
+
+    await SomeCollection.insertAsync({
+      org_id: doc.org_id,
+      date_time: Date.now(),
+      name: doc.name,
+    });
+  },
+});
+
+// ===========================================================================
+// ADMIN ACTION -> add to app/imports/api/org-methods.js (inside Meteor.methods({}))
+// requireOrgRole is defined in org-methods.js, so admin methods live there.
+// ===========================================================================
+Meteor.methods({
+  // ... existing methods ...
+
+  async <METHOD_NAME>(doc) {
+    // 1. VALIDATE first.
+    check(doc, {
+      org_id: String,
+      target_id: String,
+      role: Match.Where((r) => ['maintainer', 'member'].includes(r)),
+    });
+
+    // 2. GATE on ROLE BEFORE data. Use ['owner','maintainer'] or ['owner'].
+    await requireOrgRole(doc.org_id, ['owner', 'maintainer']);
+
+    // 3. DATA (async + awaited, scoped to org_id).
+    const target = await SomeCollection.findOneAsync({
+      _id: doc.target_id,
+      org_id: doc.org_id,
+    });
+    if (!target) {
+      throw new Meteor.Error('not-found', 'Not found in this organization');
+    }
+
+    await SomeCollection.removeAsync(target._id);
+  },
+});
+
+// ===========================================================================
+// CLIENT CALL (from a Vue defineComponent setup()/template page or composable)
+// ===========================================================================
+try {
+  await Meteor.callAsync('<METHOD_NAME>', { org_id: activeOrgId.value, /* ...fields */ });
+} catch (e) {
+  // e is a Meteor.Error; surface e.reason || e.message to the user
+}

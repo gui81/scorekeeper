@@ -1,0 +1,21 @@
+// Add to app/imports/api/publications.js. Import __Collection__ at the top of that
+// file from './collections'. requireOrgAccess is already defined there.
+//
+// Org-guarded publication: returns this.ready() (an empty result set) unless the
+// caller is a member of orgId, and only ever queries documents scoped to org_id.
+// Removing any of these four lines is a multi-tenancy data leak.
+Meteor.publish('__PUB_NAME__', async function (orgId) {
+  if (!orgId) return this.ready();
+  check(orgId, String);
+  if (!(await requireOrgAccess(this.userId, orgId))) return this.ready();
+  return __Collection__.find({ org_id: orgId });
+});
+
+// Ratings collections have no org_id — scope by the org's player ids instead:
+// Meteor.publish('__PUB_NAME___ratings', async function (orgId) {
+//   if (!orgId) return this.ready();
+//   check(orgId, String);
+//   if (!(await requireOrgAccess(this.userId, orgId))) return this.ready();
+//   const playerIds = (await Players.find({ org_id: orgId }).fetchAsync()).map((p) => p._id);
+//   return __Collection__.find({ player_id: { $in: playerIds } });
+// });

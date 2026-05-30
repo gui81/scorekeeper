@@ -1,0 +1,55 @@
+// <name>.tests.js — pure Elo math (Bonzini USA Elo: K=50, F=1000).
+//
+// PREREQUISITE: app/imports/api/methods.js exports only `addPlayer`. Before this test
+// can import the pure functions, add to methods.js:
+//
+//     export { winExpectancy, updateRating };
+//
+// (Export only the functions you actually import below.)
+//
+// `meteor test` (no --full-app) loads this file because it matches *.tests.js, but it
+// does NOT load app code automatically — so we import what we exercise explicitly.
+
+import { expect } from 'chai';
+import { winExpectancy } from '/imports/api/methods';
+
+describe('Elo math', function () {
+  describe('winExpectancy(rating, opponentRating)', function () {
+    it('returns 0.5 for equal ratings', function () {
+      expect(winExpectancy(1250, 1250)).to.equal(0.5);
+    });
+
+    it('favours the higher-rated player (> 0.5)', function () {
+      expect(winExpectancy(1500, 1000)).to.be.greaterThan(0.5);
+    });
+
+    it('matches the closed form 1 / (10^(-(r-o)/1000) + 1)', function () {
+      const r = 1400;
+      const o = 1100;
+      const expected = 1 / (Math.pow(10, -(r - o) / 1000) + 1);
+      expect(winExpectancy(r, o)).to.equal(expected);
+    });
+
+    it('is symmetric: We(r,o) + We(o,r) === 1', function () {
+      expect(winExpectancy(1300, 900) + winExpectancy(900, 1300)).to.be.closeTo(1, 1e-12);
+    });
+  });
+
+  // The new rating after a game is: Rn = currentRating + K * (S - We),  K = 50.
+  // For equal ratings (We = 0.5) a win (S = 1) adds 50 * (1 - 0.5) = 25.
+  describe('rating delta = K * (S - We)', function () {
+    const K = 50;
+
+    it('a win between equal ratings adds +25', function () {
+      const We = winExpectancy(1250, 1250); // 0.5
+      const delta = K * (1 - We);
+      expect(delta).to.equal(25);
+    });
+
+    it('a loss between equal ratings subtracts 25', function () {
+      const We = winExpectancy(1250, 1250);
+      const delta = K * (0 - We);
+      expect(delta).to.equal(-25);
+    });
+  });
+});

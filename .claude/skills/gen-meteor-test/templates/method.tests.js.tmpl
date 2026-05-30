@@ -1,0 +1,99 @@
+// <name>.tests.js — server-side method test: call a method, assert collection state.
+//
+// Runs server-side only (guarded by Meteor.isServer). Server Mongo is async-only, so
+// `it()` callbacks are `async` and every DB call is awaited. We import the method module
+// for its side effect (registers Meteor.methods) and the collections we assert on.
+//
+// `requireOrgMember` reads Meteor.userId() and looks up OrganizationMembers, so we stub
+// the user id and insert a membership fixture before calling the method.
+
+import { Meteor } from 'meteor/meteor';
+import { Random } from 'meteor/random';
+import { expect } from 'chai';
+import '/imports/api/methods'; // side effect: registers add_match / add_player
+import { addPlayer } from '/imports/api/methods';
+import { Matches, Players, CombinedRatings } from '/imports/api/collections';
+import { OrganizationMembers } from '/imports/api/organizations';
+
+if (Meteor.isServer) {
+  describe('add_match method', function () {
+    // bump the 2s default — fixtures + rating writes can exceed it
+    this.timeout(10000);
+
+    const userId = Random.id();
+    const orgId = Random.id();
+    let realUserId;
+
+    // Force Meteor.userId() to return our fixture user for the duration of the suite.
+    before(function () {
+      realUserId = Meteor.userId;
+      Meteor.userId = () => userId;
+    });
+    after(function () {
+      Meteor.userId = realUserId;
+    });
+
+    beforeEach(async function () {
+      // clean DB → known state
+      await Matches.removeAsync({});
+      await Players.removeAsync({});
+      await CombinedRatings.removeAsync({});
+      await OrganizationMembers.removeAsync({});
+
+      // org-member fixture so requireOrgMember(doc.org_id) passes
+      await OrganizationMembers.insertAsync({ org_id: orgId, user_id: userId, role: 'member' });
+
+      // seed two players in this org (addPlayer signature: name, rating, orgId, userId?)
+      await addPlayer('Alice', 1250, orgId);
+      await addPlayer('Bob', 1250, orgId);
+    });
+
+    it('inserts a match for an org member', async function () {
+      await Meteor.callAsync('add_match', {
+        ro: 'Alice',
+        bo: 'Bob',
+        rs: 10,
+        bs: 5,
+        org_id: orgId,
+      });
+
+      const count = await Matches.find({ org_id: orgId }).countAsync();
+      expect(count).to.equal(1);
+    });
+
+    it('updates the winner combined rating upward (1v1, equal start → +25)', async function () {
+      await Meteor.callAsync('add_match', {
+        ro: 'Alice',
+        bo: 'Bob',
+        rs: 10,
+        bs: 0,
+        org_id: orgId,
+      });
+
+      const alice = await Players.findOneAsync({ name: 'Alice', org_id: orgId });
+      const latest = await CombinedRatings.findOneAsync(
+        { player_id: alice._id },
+        { sort: { date_time: -1 } },
+      );
+      // equal 1250 v 1250, Alice wins: 1250 + 50*(1 - 0.5) = 1275
+      expect(latest.rating).to.equal(1275);
+    });
+
+    it('rejects a tie (rs === bs)', async function () {
+      let threw = false;
+      try {
+        await Meteor.callAsync('add_match', {
+          ro: 'Alice',
+          bo: 'Bob',
+          rs: 5,
+          bs: 5,
+          org_id: orgId,
+        });
+      } catch (e) {
+        threw = true;
+        expect(e.error).to.equal('invalid-score');
+      }
+      expect(threw).to.equal(true);
+    });
+  });
+}

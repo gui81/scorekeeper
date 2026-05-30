@@ -1,0 +1,57 @@
+import { defineComponent } from 'vue';
+import { useTracker, useSubscribe, useActiveOrg } from '../composables';
+import { __Collection__ } from '../../api/collections';
+
+export default defineComponent({
+  name: '__PAGE_NAME__',
+  setup() {
+    const { activeOrgId } = useActiveOrg();
+
+    // Subscribe to the org-guarded publication. useSubscribe reads activeOrgId.value
+    // at setup; useTracker below re-runs reactively, so reads stay scoped to the org.
+    // (If the active org can change while this page is mounted, also re-subscribe
+    // manually — see the Meteor.subscribe handle pattern in AddPlayer.js. For most
+    // pages the route remounts on org switch, so a one-shot subscribe is enough.)
+    useSubscribe('__PUB_NAME__', activeOrgId.value);
+
+    // Read the collection scoped to the active org. Runs in a Tracker computation,
+    // so it re-computes whenever minimongo or activeOrgId changes.
+    const rows = useTracker(() => {
+      if (!activeOrgId.value) return [];
+      return __Collection__.find(
+        { org_id: activeOrgId.value },
+        { sort: { date_time: -1 } },
+      ).fetch();
+    });
+
+    return { rows };
+  },
+  template: `
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <h2 class="text-center mb-3">__PAGE_NAME__</h2>
+          <div class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Detail</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in rows" :key="row._id">
+                  <td>{{ row.name }}</td>
+                  <td>{{ row._id }}</td>
+                </tr>
+                <tr v-if="rows.length === 0">
+                  <td colspan="2" class="text-center text-muted">Nothing here yet</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  `,
+});
