@@ -54,15 +54,20 @@ function computePlayerStats(playerId, allMatches, allPlayers) {
   const sorted = [...matches].sort((a, b) => a.date_time - b.date_time);
 
   let wins = 0,
-    losses = 0;
+    losses = 0,
+    ties = 0;
   let singlesWins = 0,
-    singlesLosses = 0;
+    singlesLosses = 0,
+    singlesTies = 0;
   let doublesWins = 0,
-    doublesLosses = 0;
+    doublesLosses = 0,
+    doublesTies = 0;
   let offWins = 0,
-    offLosses = 0;
+    offLosses = 0,
+    offTies = 0;
   let defWins = 0,
-    defLosses = 0;
+    defLosses = 0,
+    defTies = 0;
   let totalScored = 0,
     totalAllowed = 0;
   let shutoutWins = 0,
@@ -88,6 +93,8 @@ function computePlayerStats(playerId, allMatches, allPlayers) {
 
     const isOnRed = m.ro_id === playerId || m.rd_id === playerId;
     const playerWon = isOnRed ? rs > bs : bs > rs;
+    const playerTied = rs === bs;
+    const playerLost = !playerWon && !playerTied;
     const scored = isOnRed ? rs : bs;
     const allowed = isOnRed ? bs : rs;
 
@@ -97,30 +104,32 @@ function computePlayerStats(playerId, allMatches, allPlayers) {
     const isOffense = m.ro_id === playerId || m.bo_id === playerId;
     const isDefense = m.rd_id === playerId || m.bd_id === playerId;
 
-    // Win/loss totals
-    if (playerWon) {
-      wins++;
-    } else {
-      losses++;
-    }
+    // Win/loss/tie totals
+    if (playerWon) wins++;
+    else if (playerTied) ties++;
+    else losses++;
 
     // Singles/doubles
     if (isSingles) {
       if (playerWon) singlesWins++;
+      else if (playerTied) singlesTies++;
       else singlesLosses++;
     }
     if (isDoubles) {
       if (playerWon) doublesWins++;
+      else if (playerTied) doublesTies++;
       else doublesLosses++;
     }
 
     // Position
     if (isOffense) {
       if (playerWon) offWins++;
+      else if (playerTied) offTies++;
       else offLosses++;
     }
     if (isDefense) {
       if (playerWon) defWins++;
+      else if (playerTied) defTies++;
       else defLosses++;
     }
 
@@ -128,20 +137,20 @@ function computePlayerStats(playerId, allMatches, allPlayers) {
     totalScored += scored;
     totalAllowed += allowed;
 
-    // Shutouts
+    // Shutouts (decisive games only — a 0-0 tie is not a shutout)
     if (playerWon && allowed === 0) shutoutWins++;
-    if (!playerWon && scored === 0) shutoutLosses++;
+    if (playerLost && scored === 0) shutoutLosses++;
 
-    // Blowouts (5+ point diff)
+    // Blowouts (5+ point diff — never a tie)
     if (diff >= 5) {
       if (playerWon) blowoutWins++;
       else blowoutLosses++;
     }
 
-    // Close games (1-2 point diff)
+    // Close games (1-2 point diff, decisive only)
     if (diff <= 2) {
       if (playerWon) closeWins++;
-      else closeLosses++;
+      else if (playerLost) closeLosses++;
     }
 
     // Streaks
@@ -156,10 +165,11 @@ function computePlayerStats(playerId, allMatches, allPlayers) {
       }
     } else {
       tempWinStreak = 0;
-      if (currentStreakType === 'L') {
+      const streakType = playerTied ? 'T' : 'L';
+      if (currentStreakType === streakType) {
         currentStreak++;
       } else {
-        currentStreakType = 'L';
+        currentStreakType = streakType;
         currentStreak = 1;
       }
     }
@@ -174,8 +184,9 @@ function computePlayerStats(playerId, allMatches, allPlayers) {
       if (m.rd_id) opponents.push(m.rd_id);
     }
     opponents.forEach((oppId) => {
-      if (!h2h[oppId]) h2h[oppId] = { wins: 0, losses: 0 };
+      if (!h2h[oppId]) h2h[oppId] = { wins: 0, losses: 0, ties: 0 };
       if (playerWon) h2h[oppId].wins++;
+      else if (playerTied) h2h[oppId].ties++;
       else h2h[oppId].losses++;
     });
 
@@ -188,56 +199,61 @@ function computePlayerStats(playerId, allMatches, allPlayers) {
         partnerId = m.bo_id === playerId ? m.bd_id : m.bo_id;
       }
       if (partnerId) {
-        if (!partners[partnerId]) partners[partnerId] = { wins: 0, losses: 0 };
+        if (!partners[partnerId]) partners[partnerId] = { wins: 0, losses: 0, ties: 0 };
         if (playerWon) partners[partnerId].wins++;
+        else if (playerTied) partners[partnerId].ties++;
         else partners[partnerId].losses++;
       }
     }
   });
 
-  const totalMatches = wins + losses;
-  const winPct = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+  const totalMatches = wins + losses + ties;
+  const winPct = totalMatches > 0 ? Math.round(((wins + 0.5 * ties) / totalMatches) * 100) : 0;
 
   // Build head-to-head list
   const h2hList = Object.entries(h2h)
     .map(([oppId, record]) => {
       const opp = allPlayers.find((p) => p._id === oppId);
-      const total = record.wins + record.losses;
+      const total = record.wins + record.losses + record.ties;
       return {
         id: oppId,
         name: opp ? opp.name : 'Unknown',
         wins: record.wins,
         losses: record.losses,
-        pct: total > 0 ? Math.round((record.wins / total) * 100) : 0,
+        ties: record.ties,
+        pct: total > 0 ? Math.round(((record.wins + 0.5 * record.ties) / total) * 100) : 0,
       };
     })
-    .sort((a, b) => b.wins + b.losses - (a.wins + a.losses));
+    .sort((a, b) => b.wins + b.losses + b.ties - (a.wins + a.losses + a.ties));
 
   // Build partner list
   const partnerList = Object.entries(partners)
     .map(([pId, record]) => {
       const p = allPlayers.find((pl) => pl._id === pId);
-      const total = record.wins + record.losses;
+      const total = record.wins + record.losses + record.ties;
       return {
         id: pId,
         name: p ? p.name : 'Unknown',
         wins: record.wins,
         losses: record.losses,
-        pct: total > 0 ? Math.round((record.wins / total) * 100) : 0,
+        ties: record.ties,
+        pct: total > 0 ? Math.round(((record.wins + 0.5 * record.ties) / total) * 100) : 0,
       };
     })
     .sort((a, b) => b.pct - a.pct);
 
   // Nemesis (opponent with most wins against this player, min 2 matches)
   const nemesis =
-    h2hList.filter((o) => o.wins + o.losses >= 2).sort((a, b) => a.pct - b.pct)[0] || null;
+    h2hList
+      .filter((o) => o.wins + o.losses + o.ties >= 2)
+      .sort((a, b) => b.losses - a.losses || a.pct - b.pct)[0] || null;
 
   // Favorite opponent (opponent this player beats most, min 2 matches)
   const favorite =
-    h2hList.filter((o) => o.wins + o.losses >= 2).sort((a, b) => b.pct - a.pct)[0] || null;
+    h2hList.filter((o) => o.wins + o.losses + o.ties >= 2).sort((a, b) => b.pct - a.pct)[0] || null;
 
   // Best/worst partner (min 2 matches)
-  const qualifiedPartners = partnerList.filter((p) => p.wins + p.losses >= 2);
+  const qualifiedPartners = partnerList.filter((p) => p.wins + p.losses + p.ties >= 2);
   const bestPartner = qualifiedPartners[0] || null;
   const worstPartner =
     qualifiedPartners.length > 0 ? qualifiedPartners[qualifiedPartners.length - 1] : null;
@@ -274,15 +290,20 @@ function computePlayerStats(playerId, allMatches, allPlayers) {
     totalMatches,
     wins,
     losses,
+    ties,
     winPct,
     singlesWins,
     singlesLosses,
+    singlesTies,
     doublesWins,
     doublesLosses,
+    doublesTies,
     offWins,
     offLosses,
+    offTies,
     defWins,
     defLosses,
+    defTies,
     avgScored: totalMatches > 0 ? (totalScored / totalMatches).toFixed(1) : '0.0',
     avgAllowed: totalMatches > 0 ? (totalAllowed / totalMatches).toFixed(1) : '0.0',
     pointDiff: totalScored - totalAllowed,
@@ -463,9 +484,9 @@ export default defineComponent({
       return 'text-muted';
     }
 
-    function pctDisplay(wins, losses) {
-      const total = wins + losses;
-      return total > 0 ? Math.round((wins / total) * 100) + '%' : 'N/A';
+    function pctDisplay(wins, losses, ties = 0) {
+      const total = wins + losses + ties;
+      return total > 0 ? Math.round(((wins + 0.5 * ties) / total) * 100) + '%' : 'N/A';
     }
 
     return {
@@ -526,28 +547,28 @@ export default defineComponent({
                     <tbody>
                       <tr>
                         <td>Overall</td>
-                        <td class="fw-bold">{{ stats.wins }}W - {{ stats.losses }}L</td>
+                        <td class="fw-bold">{{ stats.wins }}W - {{ stats.losses }}L - {{ stats.ties }}D</td>
                         <td>{{ stats.winPct }}%</td>
                       </tr>
                       <tr>
                         <td>Singles</td>
-                        <td>{{ stats.singlesWins }}W - {{ stats.singlesLosses }}L</td>
-                        <td>{{ pctDisplay(stats.singlesWins, stats.singlesLosses) }}</td>
+                        <td>{{ stats.singlesWins }}W - {{ stats.singlesLosses }}L - {{ stats.singlesTies }}D</td>
+                        <td>{{ pctDisplay(stats.singlesWins, stats.singlesLosses, stats.singlesTies) }}</td>
                       </tr>
                       <tr>
                         <td>Doubles</td>
-                        <td>{{ stats.doublesWins }}W - {{ stats.doublesLosses }}L</td>
-                        <td>{{ pctDisplay(stats.doublesWins, stats.doublesLosses) }}</td>
+                        <td>{{ stats.doublesWins }}W - {{ stats.doublesLosses }}L - {{ stats.doublesTies }}D</td>
+                        <td>{{ pctDisplay(stats.doublesWins, stats.doublesLosses, stats.doublesTies) }}</td>
                       </tr>
                       <tr>
                         <td>As Offense</td>
-                        <td>{{ stats.offWins }}W - {{ stats.offLosses }}L</td>
-                        <td>{{ pctDisplay(stats.offWins, stats.offLosses) }}</td>
+                        <td>{{ stats.offWins }}W - {{ stats.offLosses }}L - {{ stats.offTies }}D</td>
+                        <td>{{ pctDisplay(stats.offWins, stats.offLosses, stats.offTies) }}</td>
                       </tr>
                       <tr>
                         <td>As Defense</td>
-                        <td>{{ stats.defWins }}W - {{ stats.defLosses }}L</td>
-                        <td>{{ pctDisplay(stats.defWins, stats.defLosses) }}</td>
+                        <td>{{ stats.defWins }}W - {{ stats.defLosses }}L - {{ stats.defTies }}D</td>
+                        <td>{{ pctDisplay(stats.defWins, stats.defLosses, stats.defTies) }}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -626,7 +647,7 @@ export default defineComponent({
                         <td>Nemesis</td>
                         <td v-if="stats.nemesis">
                           <router-link :to="'/player/' + stats.nemesis.id">{{ stats.nemesis.name }}</router-link>
-                          <small class="text-muted">({{ stats.nemesis.wins }}W-{{ stats.nemesis.losses }}L)</small>
+                          <small class="text-muted">({{ stats.nemesis.wins }}W-{{ stats.nemesis.losses }}L-{{ stats.nemesis.ties }}D)</small>
                         </td>
                         <td v-else class="text-muted">N/A</td>
                       </tr>
@@ -634,7 +655,7 @@ export default defineComponent({
                         <td>Favorite Opponent</td>
                         <td v-if="stats.favorite">
                           <router-link :to="'/player/' + stats.favorite.id">{{ stats.favorite.name }}</router-link>
-                          <small class="text-muted">({{ stats.favorite.wins }}W-{{ stats.favorite.losses }}L)</small>
+                          <small class="text-muted">({{ stats.favorite.wins }}W-{{ stats.favorite.losses }}L-{{ stats.favorite.ties }}D)</small>
                         </td>
                         <td v-else class="text-muted">N/A</td>
                       </tr>
@@ -672,6 +693,7 @@ export default defineComponent({
                       <th role="button" @click="toggleH2hSort('name')">Opponent{{ h2hSortIndicator('name') }}</th>
                       <th role="button" @click="toggleH2hSort('wins')">Wins{{ h2hSortIndicator('wins') }}</th>
                       <th role="button" @click="toggleH2hSort('losses')">Losses{{ h2hSortIndicator('losses') }}</th>
+                      <th role="button" @click="toggleH2hSort('ties')">Ties{{ h2hSortIndicator('ties') }}</th>
                       <th role="button" @click="toggleH2hSort('pct')">Win %{{ h2hSortIndicator('pct') }}</th>
                     </tr>
                   </thead>
@@ -680,10 +702,11 @@ export default defineComponent({
                       <td><router-link :to="'/player/' + opp.id">{{ opp.name }}</router-link></td>
                       <td>{{ opp.wins }}</td>
                       <td>{{ opp.losses }}</td>
+                      <td>{{ opp.ties }}</td>
                       <td>{{ opp.pct }}%</td>
                     </tr>
                     <tr v-if="sortedH2h.length === 0">
-                      <td colspan="4" class="text-center text-muted">No matches yet</td>
+                      <td colspan="5" class="text-center text-muted">No matches yet</td>
                     </tr>
                   </tbody>
                 </table>
@@ -702,6 +725,7 @@ export default defineComponent({
                       <th>Partner</th>
                       <th>Wins</th>
                       <th>Losses</th>
+                      <th>Ties</th>
                       <th>Win %</th>
                     </tr>
                   </thead>
@@ -710,6 +734,7 @@ export default defineComponent({
                       <td><router-link :to="'/player/' + p.id">{{ p.name }}</router-link></td>
                       <td>{{ p.wins }}</td>
                       <td>{{ p.losses }}</td>
+                      <td>{{ p.ties }}</td>
                       <td>{{ p.pct }}%</td>
                     </tr>
                   </tbody>

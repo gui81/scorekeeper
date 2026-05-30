@@ -40,10 +40,10 @@ async function updateRating(
   rating,
   opponentRating,
   ratingToAdjust,
-  win,
+  score,
   collection,
 ) {
-  const S = win ? 1 : 0;
+  const S = score;
   const We = winExpectancy(rating, opponentRating);
   const Rn = ratingToAdjust + K_RATING_COEFFICIENT * (S - We);
 
@@ -85,9 +85,9 @@ async function updateTeamRating(
   teamRating,
   opponentRating,
   currentRating,
-  win,
+  score,
 ) {
-  const S = win ? 1 : 0;
+  const S = score;
   const We = winExpectancy(teamRating, opponentRating);
   const Rn = currentRating + K_RATING_COEFFICIENT * (S - We);
 
@@ -112,7 +112,7 @@ async function update2v2Ratings(rv) {
     redRating,
     blueRating,
     rv.lastRoCombined.rating,
-    rv.redWon,
+    rv.redScore,
     CombinedRatings,
   );
   await updateRating(
@@ -121,7 +121,7 @@ async function update2v2Ratings(rv) {
     redRating,
     blueRating,
     rv.lastRdCombined.rating,
-    rv.redWon,
+    rv.redScore,
     CombinedRatings,
   );
   await updateRating(
@@ -130,7 +130,7 @@ async function update2v2Ratings(rv) {
     blueRating,
     redRating,
     rv.lastBoCombined.rating,
-    !rv.redWon,
+    rv.blueScore,
     CombinedRatings,
   );
   await updateRating(
@@ -139,7 +139,7 @@ async function update2v2Ratings(rv) {
     blueRating,
     redRating,
     rv.lastBdCombined.rating,
-    !rv.redWon,
+    rv.blueScore,
     CombinedRatings,
   );
 
@@ -150,7 +150,7 @@ async function update2v2Ratings(rv) {
     redRating,
     blueRating,
     rv.lastRoOffense.rating,
-    rv.redWon,
+    rv.redScore,
     OffenseRatings,
   );
   await updateRating(
@@ -159,7 +159,7 @@ async function update2v2Ratings(rv) {
     redRating,
     blueRating,
     rv.lastRdDefense.rating,
-    rv.redWon,
+    rv.redScore,
     DefenseRatings,
   );
   await updateRating(
@@ -168,7 +168,7 @@ async function update2v2Ratings(rv) {
     blueRating,
     redRating,
     rv.lastBoOffense.rating,
-    !rv.redWon,
+    rv.blueScore,
     OffenseRatings,
   );
   await updateRating(
@@ -177,7 +177,7 @@ async function update2v2Ratings(rv) {
     blueRating,
     redRating,
     rv.lastBdDefense.rating,
-    !rv.redWon,
+    rv.blueScore,
     DefenseRatings,
   );
 
@@ -191,7 +191,7 @@ async function update2v2Ratings(rv) {
     lastRedTeam.rating,
     lastBlueTeam.rating,
     lastRedTeam.rating,
-    rv.redWon,
+    rv.redScore,
   );
   await updateTeamRating(
     rv.date,
@@ -200,7 +200,7 @@ async function update2v2Ratings(rv) {
     lastBlueTeam.rating,
     lastRedTeam.rating,
     lastBlueTeam.rating,
-    !rv.redWon,
+    rv.blueScore,
   );
 }
 
@@ -212,7 +212,7 @@ async function update1v1Ratings(rv) {
     rv.lastRoCombined.rating,
     rv.lastBoCombined.rating,
     rv.lastRoCombined.rating,
-    rv.redWon,
+    rv.redScore,
     CombinedRatings,
   );
   await updateRating(
@@ -221,7 +221,7 @@ async function update1v1Ratings(rv) {
     rv.lastBoCombined.rating,
     rv.lastRoCombined.rating,
     rv.lastBoCombined.rating,
-    !rv.redWon,
+    rv.blueScore,
     CombinedRatings,
   );
 
@@ -232,7 +232,7 @@ async function update1v1Ratings(rv) {
     rv.lastRoSingles.rating,
     rv.lastBoSingles.rating,
     rv.lastRoSingles.rating,
-    rv.redWon,
+    rv.redScore,
     SinglesRatings,
   );
   await updateRating(
@@ -241,7 +241,7 @@ async function update1v1Ratings(rv) {
     rv.lastBoSingles.rating,
     rv.lastRoSingles.rating,
     rv.lastBoSingles.rating,
-    !rv.redWon,
+    rv.blueScore,
     SinglesRatings,
   );
 }
@@ -260,7 +260,7 @@ async function update2v1Ratings(doc, rv) {
       redRating,
       rv.lastBoCombined.rating,
       rv.lastRoCombined.rating,
-      rv.redWon,
+      rv.redScore,
       CombinedRatings,
     );
     await updateRating(
@@ -269,7 +269,7 @@ async function update2v1Ratings(doc, rv) {
       redRating,
       rv.lastBoCombined.rating,
       rv.lastRdCombined.rating,
-      rv.redWon,
+      rv.redScore,
       CombinedRatings,
     );
     await updateRating(
@@ -278,7 +278,7 @@ async function update2v1Ratings(doc, rv) {
       rv.lastBoCombined.rating,
       redRating,
       rv.lastBoCombined.rating,
-      !rv.redWon,
+      rv.blueScore,
       CombinedRatings,
     );
 
@@ -289,7 +289,7 @@ async function update2v1Ratings(doc, rv) {
       redRating,
       rv.lastBoSingles.rating,
       rv.lastRoOffense.rating,
-      rv.redWon,
+      rv.redScore,
       OffenseRatings,
     );
     await updateRating(
@@ -298,7 +298,7 @@ async function update2v1Ratings(doc, rv) {
       redRating,
       rv.lastBoSingles.rating,
       rv.lastRdDefense.rating,
-      rv.redWon,
+      rv.redScore,
       DefenseRatings,
     );
 
@@ -309,7 +309,7 @@ async function update2v1Ratings(doc, rv) {
       rv.lastBoSingles.rating,
       redRating,
       rv.lastBoSingles.rating,
-      !rv.redWon,
+      rv.blueScore,
       SinglesRatings,
     );
 
@@ -322,7 +322,7 @@ async function update2v1Ratings(doc, rv) {
       lastRedTeam.rating,
       rv.lastBoCombined.rating,
       lastRedTeam.rating,
-      rv.redWon,
+      rv.redScore,
     );
   } else {
     // 1 red v 2 blue
@@ -335,7 +335,7 @@ async function update2v1Ratings(doc, rv) {
       rv.lastRoCombined.rating,
       blueRating,
       rv.lastRoCombined.rating,
-      rv.redWon,
+      rv.redScore,
       CombinedRatings,
     );
     await updateRating(
@@ -344,7 +344,7 @@ async function update2v1Ratings(doc, rv) {
       blueRating,
       rv.lastRoCombined.rating,
       rv.lastBoCombined.rating,
-      !rv.redWon,
+      rv.blueScore,
       CombinedRatings,
     );
     await updateRating(
@@ -353,7 +353,7 @@ async function update2v1Ratings(doc, rv) {
       blueRating,
       rv.lastRoCombined.rating,
       rv.lastBdCombined.rating,
-      !rv.redWon,
+      rv.blueScore,
       CombinedRatings,
     );
 
@@ -364,7 +364,7 @@ async function update2v1Ratings(doc, rv) {
       rv.lastRoSingles.rating,
       blueRating,
       rv.lastRoSingles.rating,
-      rv.redWon,
+      rv.redScore,
       SinglesRatings,
     );
 
@@ -375,7 +375,7 @@ async function update2v1Ratings(doc, rv) {
       blueRating,
       rv.lastRoSingles.rating,
       rv.lastBoOffense.rating,
-      !rv.redWon,
+      rv.blueScore,
       OffenseRatings,
     );
     await updateRating(
@@ -384,7 +384,7 @@ async function update2v1Ratings(doc, rv) {
       blueRating,
       rv.lastRoSingles.rating,
       rv.lastBdDefense.rating,
-      !rv.redWon,
+      rv.blueScore,
       DefenseRatings,
     );
 
@@ -397,7 +397,7 @@ async function update2v1Ratings(doc, rv) {
       lastBlueTeam.rating,
       rv.lastRoCombined.rating,
       lastBlueTeam.rating,
-      !rv.redWon,
+      rv.blueScore,
     );
   }
 }
@@ -408,7 +408,13 @@ async function updateAllRatings(doc, date) {
     return;
   }
 
-  const rv = { date, redWon: parseInt(doc.rs) > parseInt(doc.bs) };
+  // Result from red's perspective as an Elo score S: win = 1, loss = 0, tie = 0.5.
+  // Blue's score is the complement (1 - redScore). A draw still moves unequal
+  // ratings toward each other; equally rated players are unchanged.
+  const rs = parseInt(doc.rs);
+  const bs = parseInt(doc.bs);
+  const redScore = rs > bs ? 1 : rs < bs ? 0 : 0.5;
+  const rv = { date, redScore, blueScore: 1 - redScore };
 
   if (typeof doc.ro !== 'undefined') {
     rv.roId = await getPlayerId(doc.ro, doc.org_id);
@@ -498,7 +504,9 @@ async function addPlayer(playerName, rating, orgId, userId) {
   return id;
 }
 
-export { addPlayer };
+// `addPlayer` is used by org bootstrap; the rest are exported for the Elo test suite
+// (app/imports/api/methods.tests.js). They have no other importers.
+export { addPlayer, winExpectancy, updateRating, updateAllRatings };
 
 async function insertMatch(doc, orgId) {
   const roId = typeof doc.ro !== 'undefined' ? await getPlayerId(doc.ro, orgId) : undefined;
@@ -612,6 +620,9 @@ if (Meteor.isServer) {
           bd: await getPlayerName(match.bd_id),
           rs: match.rs,
           bs: match.bs,
+          // carry the org so updateAllRatings → getPlayerId resolves names within the
+          // match's org; without it a name shared across orgs could match the wrong player
+          org_id: match.org_id,
         };
         await updateAllRatings(doc, match.date_time);
       }

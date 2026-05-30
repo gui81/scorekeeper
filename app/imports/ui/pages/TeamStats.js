@@ -29,19 +29,23 @@ export default defineComponent({
       const teams = {};
 
       matches.forEach((match) => {
-        const redWin = parseInt(match.rs, 10) > parseInt(match.bs, 10) ? 1 : 0;
-        const blueWin = redWin ? 0 : 1;
+        const r = parseInt(match.rs, 10);
+        const b = parseInt(match.bs, 10);
+        const redWin = r > b ? 1 : 0;
+        const blueWin = b > r ? 1 : 0;
+        const tie = r === b ? 1 : 0;
 
-        const addTeam = (oId, dId, win, loss) => {
+        const addTeam = (oId, dId, win, loss, draw) => {
           if (!oId || !dId) return;
           const key = oId + '|' + dId;
-          if (!teams[key]) teams[key] = { oId, dId, wins: 0, losses: 0 };
+          if (!teams[key]) teams[key] = { oId, dId, wins: 0, losses: 0, ties: 0 };
           teams[key].wins += win;
           teams[key].losses += loss;
+          teams[key].ties += draw;
         };
 
-        addTeam(match.ro_id, match.rd_id, redWin, blueWin);
-        addTeam(match.bo_id, match.bd_id, blueWin, redWin);
+        addTeam(match.ro_id, match.rd_id, redWin, blueWin, tie);
+        addTeam(match.bo_id, match.bd_id, blueWin, redWin, tie);
       });
 
       const result = [];
@@ -51,14 +55,15 @@ export default defineComponent({
         const dPlayer = Players.findOne({ _id: t.dId });
         if (!oPlayer || !dPlayer) continue;
 
-        const total = t.wins + t.losses;
+        const total = t.wins + t.losses + t.ties;
         result.push({
           key,
           offPlayer: oPlayer.name,
           defPlayer: dPlayer.name,
           wins: t.wins,
           losses: t.losses,
-          percent: total > 0 ? Math.round((t.wins / total) * 100) : 0,
+          ties: t.ties,
+          percent: total > 0 ? Math.round(((t.wins + 0.5 * t.ties) / total) * 100) : 0,
           rating: getLatestTeamRating(t.oId, t.dId),
         });
       }
@@ -122,6 +127,7 @@ export default defineComponent({
                   <th role="button" @click="toggleSort('defPlayer')">Defense{{ sortIndicator('defPlayer') }}</th>
                   <th role="button" class="d-none d-md-table-cell" @click="toggleSort('wins')">Wins{{ sortIndicator('wins') }}</th>
                   <th role="button" class="d-none d-md-table-cell" @click="toggleSort('losses')">Losses{{ sortIndicator('losses') }}</th>
+                  <th role="button" class="d-none d-md-table-cell" @click="toggleSort('ties')">Ties{{ sortIndicator('ties') }}</th>
                   <th role="button" class="d-none d-md-table-cell" @click="toggleSort('percent')">Win %{{ sortIndicator('percent') }}</th>
                   <th role="button" @click="toggleSort('rating')">Rating{{ sortIndicator('rating') }}</th>
                 </tr>
@@ -132,11 +138,12 @@ export default defineComponent({
                   <td>{{ t.defPlayer }}</td>
                   <td class="d-none d-md-table-cell">{{ t.wins }}</td>
                   <td class="d-none d-md-table-cell">{{ t.losses }}</td>
+                  <td class="d-none d-md-table-cell">{{ t.ties }}</td>
                   <td class="d-none d-md-table-cell">{{ t.percent }}%</td>
                   <td>{{ t.rating }}</td>
                 </tr>
                 <tr v-if="paginatedStats.length === 0">
-                  <td colspan="6" class="text-center text-muted">No team stats available</td>
+                  <td colspan="7" class="text-center text-muted">No team stats available</td>
                 </tr>
               </tbody>
             </table>

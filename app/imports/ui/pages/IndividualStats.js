@@ -36,20 +36,24 @@ export default defineComponent({
       const players = {};
 
       matches.forEach((match) => {
-        const redWin = parseInt(match.rs, 10) > parseInt(match.bs, 10) ? 1 : 0;
-        const blueWin = redWin ? 0 : 1;
+        const r = parseInt(match.rs, 10);
+        const b = parseInt(match.bs, 10);
+        const redWin = r > b ? 1 : 0;
+        const blueWin = b > r ? 1 : 0;
+        const tie = r === b ? 1 : 0;
 
-        const addPlayer = (id, win, loss) => {
+        const addPlayer = (id, win, loss, draw) => {
           if (!id) return;
-          if (!players[id]) players[id] = { wins: 0, losses: 0 };
+          if (!players[id]) players[id] = { wins: 0, losses: 0, ties: 0 };
           players[id].wins += win;
           players[id].losses += loss;
+          players[id].ties += draw;
         };
 
-        addPlayer(match.ro_id, redWin, blueWin);
-        addPlayer(match.rd_id, redWin, blueWin);
-        addPlayer(match.bo_id, blueWin, redWin);
-        addPlayer(match.bd_id, blueWin, redWin);
+        addPlayer(match.ro_id, redWin, blueWin, tie);
+        addPlayer(match.rd_id, redWin, blueWin, tie);
+        addPlayer(match.bo_id, blueWin, redWin, tie);
+        addPlayer(match.bd_id, blueWin, redWin, tie);
       });
 
       const result = [];
@@ -57,13 +61,15 @@ export default defineComponent({
         const player = Players.findOne({ _id: id });
         if (!player) continue;
 
-        const total = players[id].wins + players[id].losses;
+        const total = players[id].wins + players[id].losses + players[id].ties;
         result.push({
           id,
           name: player.name,
           wins: players[id].wins,
           losses: players[id].losses,
-          percent: total > 0 ? Math.round((players[id].wins / total) * 100) : 0,
+          ties: players[id].ties,
+          percent:
+            total > 0 ? Math.round(((players[id].wins + 0.5 * players[id].ties) / total) * 100) : 0,
           combined: getLatestRating(id, CombinedRatings),
           singles: getLatestRating(id, SinglesRatings),
           offense: getLatestRating(id, OffenseRatings),
@@ -129,6 +135,7 @@ export default defineComponent({
                   <th role="button" @click="toggleSort('name')">Name{{ sortIndicator('name') }}</th>
                   <th role="button" class="d-none d-md-table-cell" @click="toggleSort('wins')">Wins{{ sortIndicator('wins') }}</th>
                   <th role="button" class="d-none d-md-table-cell" @click="toggleSort('losses')">Losses{{ sortIndicator('losses') }}</th>
+                  <th role="button" class="d-none d-md-table-cell" @click="toggleSort('ties')">Ties{{ sortIndicator('ties') }}</th>
                   <th role="button" class="d-none d-md-table-cell" @click="toggleSort('percent')">Win %{{ sortIndicator('percent') }}</th>
                   <th role="button" class="d-none d-md-table-cell" @click="toggleSort('singles')">Singles{{ sortIndicator('singles') }}</th>
                   <th role="button" class="d-none d-md-table-cell" @click="toggleSort('offense')">Offense{{ sortIndicator('offense') }}</th>
@@ -141,6 +148,7 @@ export default defineComponent({
                   <td><router-link :to="'/player/' + s.id">{{ s.name }}</router-link></td>
                   <td class="d-none d-md-table-cell">{{ s.wins }}</td>
                   <td class="d-none d-md-table-cell">{{ s.losses }}</td>
+                  <td class="d-none d-md-table-cell">{{ s.ties }}</td>
                   <td class="d-none d-md-table-cell">{{ s.percent }}%</td>
                   <td class="d-none d-md-table-cell">{{ s.singles }}</td>
                   <td class="d-none d-md-table-cell">{{ s.offense }}</td>
@@ -148,7 +156,7 @@ export default defineComponent({
                   <td>{{ s.combined }}</td>
                 </tr>
                 <tr v-if="paginatedStats.length === 0">
-                  <td colspan="8" class="text-center text-muted">No stats available</td>
+                  <td colspan="9" class="text-center text-muted">No stats available</td>
                 </tr>
               </tbody>
             </table>

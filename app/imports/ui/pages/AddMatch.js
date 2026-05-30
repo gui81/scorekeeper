@@ -35,7 +35,7 @@ export default defineComponent({
 
       matches.forEach((m) => {
         const redWon = parseInt(m.rs, 10) > parseInt(m.bs, 10);
-        const blueWon = !redWon;
+        const blueWon = parseInt(m.bs, 10) > parseInt(m.rs, 10);
 
         if (m.ro_id && !m.rd_id && redWon) redSinglesWins++;
         if (m.ro_id && m.rd_id && redWon) redDoublesWins++;
@@ -91,11 +91,6 @@ export default defineComponent({
         scoreB > 10
       ) {
         errorMsg.value = 'Scores must be between 0 and 10.';
-        return;
-      }
-
-      if (scoreR === scoreB) {
-        errorMsg.value = 'Scores cannot be tied.';
         return;
       }
 
